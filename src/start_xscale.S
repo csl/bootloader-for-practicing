@@ -34,10 +34,11 @@ _start:
 reset:
 
 	// Mask All interrupt 
+        //#define INTERRUPT_CONTROL_BASE 0x40D00000
         ldr     r12, =INTERRUPT_CONTROL_BASE
         ldr     r0, =0x00000000
-        str     r0, [r12, #ICMR]
-        str     r0, [r12, #ICLR]
+        str     r0, [r12, #ICMR]  //Interrupt Controller Mask Register
+        str     r0, [r12, #ICLR]  //Interrupt Controller Level Register
 
 	// Initialize GPIO
         bl      gpio_init
@@ -75,9 +76,8 @@ die:
 ///////////////////////////////////////////////////////////////////////////////
 
 gpio_init:
-
-
-	ldr     r12, =GPIO_BASE
+    //#define GPIO_BASE         0x40E00000
+    ldr     r12, =GPIO_BASE
 
     ldr     r0, =GAFR0L_VALUE
     str     r0, [r12, #GAFR0_L]
@@ -115,12 +115,13 @@ gpio_init:
     ldr     r0, =GPDR2_VALUE
     str     r0, [r12, #GPDR2]
 
-       // Clear the peripheral control register bits
-	ldr     r1, =PSSR
-	ldr     r2, =(PSSR_RDH | PSSR_PH)
-	str     r2, [r1]
-        
-	mov     pc, lr
+    // Clear the peripheral control register bits
+    ldr     r1, =PSSR
+    ldr     r2, =(PSSR_RDH | PSSR_PH)
+    str     r2, [r1]
+
+    //lr(r14）
+    mov     pc, lr
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////	 	Initialize SDRAM			///////////////
@@ -128,14 +129,14 @@ gpio_init:
 
 
 init_sdram:
-	mov	r10, lr
-
+        mov	r10, lr
+        //#define CLOCK_MANAGER_BASE 0x41300000
         ldr     r12, =CLOCK_MANAGER_BASE
 
-        ldr     r0, =CKEN_VALUE
-        str     r0, [r12, #CKEN]
-        ldr     r0, =OSCC_VALUE
-        str     r0, [r12, #OSCC]
+        ldr     r0, =CKEN_VALUE		//#define CKEN_VALUE        0x00000040
+        str     r0, [r12, #CKEN]		//Clock Enable Register
+        ldr     r0, =OSCC_VALUE		//#define OSCC_VALUE        0x00000002
+        str     r0, [r12, #OSCC]		//Oscillator Configuration Register
 
 #if 1
 //TODO: Issuing a FCS on a B1 seems to make it crash
