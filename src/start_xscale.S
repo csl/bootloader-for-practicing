@@ -19,7 +19,7 @@
 #include <config.h>
 
 .text
-.extern _ld_text_start
+.extern _ld_text_start			//int ld-xcale script file
 .extern _ld_text_and_data_size
 
 
@@ -79,45 +79,46 @@ gpio_init:
     //#define GPIO_BASE         0x40E00000
     ldr     r12, =GPIO_BASE
 
-    ldr     r0, =GAFR0L_VALUE
-    str     r0, [r12, #GAFR0_L]
+    ldr     r0, =GAFR0L_VALUE		//GPIO alternate function select register GPIO[15:0]
+    str     r0, [r12, #GAFR0_L]         
     ldr     r0, =GAFR0U_VALUE
-    str     r0, [r12, #GAFR0_U]
+    str     r0, [r12, #GAFR0_U]         //GPIO alternate function select register GPIO[31:16]
 
-    ldr     r0, =GAFR1L_VALUE
+    ldr     r0, =GAFR1L_VALUE		//GPIO alternate function select register GPIO[47:32]
     str     r0, [r12, #GAFR1_L]
     ldr     r0, =GAFR1U_VALUE
-    str     r0, [r12, #GAFR1_U]
+    str     r0, [r12, #GAFR1_U]		//GPIO alternate function select register GPIO[63:48]
 
-    ldr     r0, =GAFR2L_VALUE
+    ldr     r0, =GAFR2L_VALUE		//GPIO alternate function select register GPIO[79:64]
     str     r0, [r12, #GAFR2_L]
     ldr     r0, =GAFR2U_VALUE
-    str     r0, [r12, #GAFR2_U]
+    str     r0, [r12, #GAFR2_U]		//GPIO alternate function select register GPIO[80]
 
-    ldr     r0, =GPSR0_VALUE
+    ldr     r0, =GPSR0_VALUE		//GPIO Pin-Level Register GPIO<31:0>
     str     r0, [r12, #GPSR0]
     ldr     r0, =GPSR1_VALUE
-    str     r0, [r12, #GPSR1]
+    str     r0, [r12, #GPSR1]		//GPIO Pin-Level Register GPIO<63:32>
     ldr     r0, =GPSR2_VALUE
-    str     r0, [r12, #GPSR2]
+    str     r0, [r12, #GPSR2]		//GPIO Pin-Level Register GPIO<80:64>
 
-    ldr     r0, =GPCR0_VALUE
+    ldr     r0, =GPCR0_VALUE		//GPIO Pin Output Clear Register GPIO<31:0>
     str     r0, [r12, #GPCR0]
-    ldr     r0, =GPCR1_VALUE
-    str     r0, [r12, #GPCR1]
-    ldr     r0, =GPCR2_VALUE
+    ldr     r0, =GPCR1_VALUE		//GPIO Pin Output Clear Register GPIO <63:32>
+    str     r0, [r12, #GPCR1]	
+    ldr     r0, =GPCR2_VALUE		//GPIO Pin Output Clear Register GPIO <80:64>
     str     r0, [r12, #GPCR2]
 
-    ldr     r0, =GPDR0_VALUE
+    ldr     r0, =GPDR0_VALUE		//GPIO Pin Direction Register GPIO<31:0>
     str     r0, [r12, #GPDR0]
-    ldr     r0, =GPDR1_VALUE
+    ldr     r0, =GPDR1_VALUE		//GPIO Pin Direction Register GPIO<63:32>
     str     r0, [r12, #GPDR1]
-    ldr     r0, =GPDR2_VALUE
+    ldr     r0, =GPDR2_VALUE		//GPIO Pin Direction Register GPIO<80:64>
     str     r0, [r12, #GPDR2]
 
     // Clear the peripheral control register bits
-    ldr     r1, =PSSR
-    ldr     r2, =(PSSR_RDH | PSSR_PH)
+    //#define PSSR              0x40F00004
+    ldr     r1, =PSSR			//Power Manager Sleep Status Register (PSSR)
+    ldr     r2, =(PSSR_RDH | PSSR_PH)	//Read Disable Hold && Peripheral Control Hold.
     str     r2, [r1]
 
     //lr(r14）
@@ -134,18 +135,18 @@ init_sdram:
         ldr     r12, =CLOCK_MANAGER_BASE
 
         ldr     r0, =CKEN_VALUE		//#define CKEN_VALUE        0x00000040
-        str     r0, [r12, #CKEN]		//Clock Enable Register
+        str     r0, [r12, #CKEN]	//Clock Enable Register
         ldr     r0, =OSCC_VALUE		//#define OSCC_VALUE        0x00000002
-        str     r0, [r12, #OSCC]		//Oscillator Configuration Register
+        str     r0, [r12, #OSCC]	//Oscillator Configuration Register
 
 #if 1
 //TODO: Issuing a FCS on a B1 seems to make it crash
 //shortly after. Figure out why...
-        ldr     r0, =CCCR_VALUE
-        str     r0, [r12, #CCCR]
+        ldr     r0, =CCCR_VALUE		//#define CCCR_VALUE        0x00000161		// |0010|0100|0001 0x241
+        str     r0, [r12, #CCCR]	//Core Clock Configuration Register
         mov     r1, #3
-        mcr     p14, 0, r1, c6, c0, 0
-
+        mcr     p14, 0, r1, c6, c0, 0  //p14, c6, c0
+        //OS Timer Count Register
 	ldr	r1, =OSCR
 	ldr	r0, =0
 	str	r0, [r1]
@@ -158,40 +159,43 @@ wait_for_clock:
 #endif
 
         //Step 1 in Intel's code
+	//Memory Control Registers
+	//#define MEM_CTL_BASE      0x48000000
         ldr     r12, =MEM_CTL_BASE
 
-        ldr     r0, =MSC0_VALUE
-        str     r0, [r12, #MSC0]
+        ldr     r0, =MSC0_VALUE               //Static Memory Control Register 0
+        str     r0, [r12, #MSC0]            
+
         //Intel's code reads it back to make sure it works...
     //    ldr     r0, [r12, #MSC0]
 
-        ldr     r0, =MSC1_VALUE
+        ldr     r0, =MSC1_VALUE              //Static Memory Control Register 1
         str     r0, [r12, #MSC1]
         ldr     r0, [r12, #MSC1]
 
-        ldr     r0, =MSC2_VALUE
+        ldr     r0, =MSC2_VALUE              //Static Memory Control Register 2
         str     r0, [r12, #MSC2]
         ldr     r0, [r12, #MSC2]
 
-        ldr     r0, =MECR_VALUE
+        ldr     r0, =MECR_VALUE              //Expansion Memory (PCMCIA/Compact Flash) Bus Configuration Register
         str     r0, [r12, #MECR]
 
-        ldr     r0, =MCMEM0_VALUE
+        ldr     r0, =MCMEM0_VALUE            //Card interface Common Memory Space Socket 0 Timing Configuration
         str     r0, [r12, #MCMEM0]
 
-        ldr     r0, =MCMEM1_VALUE
+        ldr     r0, =MCMEM1_VALUE            //Card interface Common Memory Space Socket 1 Timing Configuration
         str     r0, [r12, #MCMEM1]
 
-        ldr     r0, =MCATT0_VALUE
-        str     r0, [r12, #MCATT0]
+        ldr     r0, =MCATT0_VALUE            //Card interface Attribute Space Socket 0 Timing Configuration
+        str     r0, [r12, #MCATT0]    
 
-        ldr     r0, =MCATT1_VALUE
+        ldr     r0, =MCATT1_VALUE            //Card interface Attribute Space Socket 1 Timing Configuration
         str     r0, [r12, #MCATT1]
 
-        ldr     r0, =MCIO0_VALUE
+        ldr     r0, =MCIO0_VALUE             //Card interface I/O Space Socket 0 Timing Configuration
         str     r0, [r12, #MCIO0]
 
-        ldr     r0, =MCIO1_VALUE
+        ldr     r0, =MCIO1_VALUE             //Card interface I/O Space Socket 1 Timing Configuration
         str     r0, [r12, #MCIO1]
 
         //according to Intel's comments, we're extracting the DRI
@@ -204,8 +208,8 @@ wait_for_clock:
 	// The first step requires that we set K0RUN and E0PIN while
 	// configuring DRI and clearing KXFREE.  All other values
 	// MUST be left alone
-        ldr     r0, =MDREFR_VALUE
-        ldr     r3, [r12, #MDREFR]
+        ldr     r0, =MDREFR_VALUE	    //SDRAM Refresh Control Register
+        ldr     r3, [r12, #MDREFR]          
         ldr     r1, =0xFFF
         and     r0, r0, r1
 
@@ -217,7 +221,6 @@ wait_for_clock:
 
         //Write it back
         str     r3, [r12, #MDREFR]
-
 
 	// 2.
 	// We don't have Synchronous Static Memory and don't want to
@@ -259,7 +262,7 @@ wait_for_clock:
         nop
 
         //Step 4 in Intel's code
-        ldr     r0, =MDCNFG_VALUE
+        ldr     r0, =MDCNFG_VALUE     //SDRAM Configuration Register 0
 
         //disable all sdram banks
         bic     r0, r0, #0x00000003
@@ -281,7 +284,9 @@ wait_for_clock:
 
         //pause for approx 200 usecs
         ldr     r4, =0x300
+
 sdram_dly:
+
         ldr     r1, [r0]
         cmp     r4, r1
         bgt     sdram_dly
@@ -294,7 +299,7 @@ sdram_dly:
 
         //Step 7 in Intel's code
         //Access memory that has not been enabled for CBR refresh cycles (8)
-	ldr	r0, =SDRAM_BASE
+	ldr	r0, =SDRAM_BASE                                 //SDRAM Bank 0
         str     r0, [r0]
         str     r0, [r0]
         str     r0, [r0]
@@ -309,21 +314,21 @@ sdram_dly:
 
 
         //Step 9
-        ldr     r0, [r12, #MDCNFG]
+        ldr     r0, [r12, #MDCNFG]		 //SDRAM Configuration Register 0
 
         //enable bank 0 (what about bank 1?)
         orr     r0, r0, #0x00000001
-        str     r0, [r12, #MDCNFG]
+        str     r0, [r12, #MDCNFG]		 //SDRAM Configuration Register 0
 
         //Step 10
         //write MDMRS again
-        ldr     r0, =MDMRS_VALUE
+        ldr     r0, =MDMRS_VALUE		//MRS value to be written to SDRAM
         str     r0, [r12, #MDMRS]
 
 
         //Step 11
         //are we A1_Cotulla?
-        ldr     r0, [r12, #MDREFR]
+        ldr     r0, [r12, #MDREFR]		//SDRAM Refresh Control Register
 
 	ldr	r11, =0xFFEFFFFF
 	and	r0, r0, r11

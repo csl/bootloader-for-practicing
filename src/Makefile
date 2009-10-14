@@ -35,9 +35,6 @@ OBJ_FILES = $(SFILES:%.S=%.o) $(CFILES:%.c=%.o)
 
 BIN_FILE = x-boot255
 
-
-
-
 all : $(OBJ_FILES)
 	$(CC) $(LDFLAGS) -o $(BIN_FILE)-elf32 $(ELF32_LDFLAGS) $(OBJ_FILES) -lgcc
 	$(OBJCOPY) $(OCFLAGS) $(BIN_FILE)-elf32 $(BIN_FILE)
