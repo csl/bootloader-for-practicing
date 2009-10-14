@@ -32,13 +32,12 @@ _start:
 
 
 reset:
-
-	// Mask All interrupt 
+        // Mask All interrupt 
         //#define INTERRUPT_CONTROL_BASE 0x40D00000
         ldr     r12, =INTERRUPT_CONTROL_BASE
         ldr     r0, =0x00000000
         str     r0, [r12, #ICMR]  //Interrupt Controller Mask Register
-        str     r0, [r12, #ICLR]  //Interrupt Controller Level Register
+        str     r0, [r12, #ICLR]   //Interrupt Controller Level Register (determined IRQ or FIQ)
 
 	// Initialize GPIO
         bl      gpio_init
@@ -60,12 +59,11 @@ repeat:
         cmp             r4, r6
         blt             repeat
 
+        ldr	sp, =_ld_stack_address
 
-	ldr	sp, =_ld_stack_address
-
-	// Jump to c_main
-	ldr	r0, =c_main
-	mov	pc, r0
+        // Jump to c_main
+        ldr	r0, =c_main
+        mov	pc, r0
 
 die:
 	b	die
@@ -79,27 +77,57 @@ gpio_init:
     //#define GPIO_BASE         0x40E00000
     ldr     r12, =GPIO_BASE
 
+    /*
+    Develper's Manual P.120
+    #define GAFR0L_VALUE      0x8000 0000 (8x4bit)
+    #define GAFR0U_VALUE      0xA500 0010
+    */
+
     ldr     r0, =GAFR0L_VALUE		//GPIO alternate function select register GPIO[15:0]
     str     r0, [r12, #GAFR0_L]         
     ldr     r0, =GAFR0U_VALUE
-    str     r0, [r12, #GAFR0_U]         //GPIO alternate function select register GPIO[31:16]
+    str     r0, [r12, #GAFR0_U]		//GPIO alternate function select register GPIO[31:16]
+
+    /*
+    #define GAFR1L_VALUE      0x60008018
+    #define GAFR1U_VALUE      0xAAA5AAAA
+    */
 
     ldr     r0, =GAFR1L_VALUE		//GPIO alternate function select register GPIO[47:32]
     str     r0, [r12, #GAFR1_L]
     ldr     r0, =GAFR1U_VALUE
     str     r0, [r12, #GAFR1_U]		//GPIO alternate function select register GPIO[63:48]
 
+    /*
+    #define GAFR2L_VALUE      0xAAA0000A
+    #define GAFR2U_VALUE      0x00000002
+    */    
+
     ldr     r0, =GAFR2L_VALUE		//GPIO alternate function select register GPIO[79:64]
     str     r0, [r12, #GAFR2_L]
     ldr     r0, =GAFR2U_VALUE
     str     r0, [r12, #GAFR2_U]		//GPIO alternate function select register GPIO[80]
 
+    /*
+    P.113
+    #define GPSR0_VALUE       0x00408030//0x00588020//00588030//0x00588020
+    #define GPSR1_VALUE       0x00BFA882
+    #define GPSR2_VALUE       0x0001C000
+    */
+
     ldr     r0, =GPSR0_VALUE		//GPIO Pin-Level Register GPIO<31:0>
     str     r0, [r12, #GPSR0]
-    ldr     r0, =GPSR1_VALUE
-    str     r0, [r12, #GPSR1]		//GPIO Pin-Level Register GPIO<63:32>
-    ldr     r0, =GPSR2_VALUE
-    str     r0, [r12, #GPSR2]		//GPIO Pin-Level Register GPIO<80:64>
+    ldr     r0, =GPSR1_VALUE		//GPIO Pin-Level Register GPIO<63:32>
+    str     r0, [r12, #GPSR1]		
+    ldr     r0, =GPSR2_VALUE		//GPIO Pin-Level Register GPIO<80:64>
+    str     r0, [r12, #GPSR2]		
+
+    /*
+    P.115
+    #define GPCR0_VALUE       0xC0031100//0xC0033110//0xC00311D0
+    #define GPCR1_VALUE       0xFC400300
+    #define GPCR2_VALUE       0x00003FFF
+    */
 
     ldr     r0, =GPCR0_VALUE		//GPIO Pin Output Clear Register GPIO<31:0>
     str     r0, [r12, #GPCR0]
@@ -107,6 +135,15 @@ gpio_init:
     str     r0, [r12, #GPCR1]	
     ldr     r0, =GPCR2_VALUE		//GPIO Pin Output Clear Register GPIO <80:64>
     str     r0, [r12, #GPCR2]
+
+    /*
+    P.112
+    #define GPDR0_VALUE       0xC0439330//0xC05BE830//0xC05BB130//0xC05B91F0
+    #define GPDR1_VALUE       0xFCFFAB82
+    #define GPDR2_VALUE       0x0001FFFF
+    0 – Pin configured as an input.
+    1 – Pin configured as an output.
+    */
 
     ldr     r0, =GPDR0_VALUE		//GPIO Pin Direction Register GPIO<31:0>
     str     r0, [r12, #GPDR0]
