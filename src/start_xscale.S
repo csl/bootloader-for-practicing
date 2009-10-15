@@ -171,7 +171,7 @@ set_core_clock:		/* PXA250 Core Clock is set to Turbo Mode */
 
 	//Develper's Manual P.141
 	//#define OSCR              0x40A00010
-	ldr	r1, =OSCR		//OS Timer Count Register			
+	ldr	r1, =OSCR		//OS Timer Count Register
 	ldr	r0, =0
 	str	r0, [r1]
 
@@ -332,7 +332,7 @@ wait_for_clock:
 
 //Step 5 in Intel's code
 
-        ldr     r0, =OSCR
+        ldr     r0, =OSCR	//OS Timer Count Register
 	mov	r1, #0
 	str	r1, [r0]
 
@@ -358,6 +358,7 @@ sdram_dly:
 //Step 7 in Intel's code
 
         //Access memory that has not been enabled for CBR refresh cycles (8)
+	/* force 8 cycles to SDRAM : SDRAM bank all in the CBR (refrash cycle) */
 	ldr	r0, =SDRAM_BASE			//SDRAM Bank 0
         str     r0, [r0]
         str     r0, [r0]
