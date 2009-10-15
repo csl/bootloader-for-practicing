@@ -76,24 +76,23 @@ die:
 gpio_init:
     //#define GPIO_BASE         0x40E00000
     ldr     r12, =GPIO_BASE
-
     
     //Develper's Manual P.120   
+    //Choice GPIO alternate function: PIN: in or out
     ldr     r0, =GAFR0L_VALUE		//#define GAFR0L_VALUE      0x8000 0000 (8x4bit)
     str     r0, [r12, #GAFR0_L]         //GPIO alternate function select register GPIO[15:0]
     ldr     r0, =GAFR0U_VALUE		//#define GAFR0U_VALUE      0xA500 0010
     str     r0, [r12, #GAFR0_U]		//GPIO alternate function select register GPIO[31:16]
 
-    ldr     r0, =GAFR1L_VALUE		//#define GAFR1L_VALUE      0x60008018
+    ldr     r0, =GAFR1L_VALUE		//#define GAFR1L_VALUE      0x6000 8018
     str     r0, [r12, #GAFR1_L]		//GPIO alternate function select register GPIO[47:32]
-    ldr     r0, =GAFR1U_VALUE		//#define GAFR1U_VALUE      0xAAA5AAAA
+    ldr     r0, =GAFR1U_VALUE		//#define GAFR1U_VALUE      0xAAA5 AAAA
     str     r0, [r12, #GAFR1_U]		//GPIO alternate function select register GPIO[63:48]	
 
-    ldr     r0, =GAFR2L_VALUE		//#define GAFR2L_VALUE      0xAAA0000A
+    ldr     r0, =GAFR2L_VALUE		//#define GAFR2L_VALUE      0xAAA0 000A
     str     r0, [r12, #GAFR2_L]		//GPIO alternate function select register GPIO[79:64]
-    ldr     r0, =GAFR2U_VALUE		//#define GAFR2U_VALUE      0x00000002
+    ldr     r0, =GAFR2U_VALUE		//#define GAFR2U_VALUE      0x0000 0002
     str     r0, [r12, #GAFR2_U]		//GPIO alternate function select register GPIO[80]
-
     
     //Develper's Manual P.113    
     ldr     r0, =GPSR0_VALUE		//#define GPSR0_VALUE       0x00408030//0x00588020//00588030//0x00588020
@@ -125,9 +124,11 @@ gpio_init:
     ldr     r0, =GPDR2_VALUE		//#define GPDR2_VALUE       0x0001FFFF
     str     r0, [r12, #GPDR2]		//GPIO Pin Direction Register GPIO<80:64>
 
-    // Clear the peripheral control register bits
+    // Clear the peripheral control registers bits
     //Develper's Manual P.91
     //#define PSSR              0x40F00004
+    //#define PSSR_PH           0x00000010
+    //#define PSSR_RDH          0x00000020
     ldr     r1, =PSSR			//Power Manager Sleep Status Register (PSSR)
     ldr     r2, =(PSSR_RDH | PSSR_PH)	//Read Disable Hold && Peripheral Control Hold.
     str     r2, [r1]
@@ -156,9 +157,15 @@ init_sdram:
 #if 1
 //TODO: Issuing a FCS on a B1 seems to make it crash
 //shortly after. Figure out why...
+
+init_clock_reg:		/* PXA250 Clock Register initialization */
 	//Develper's Manual P.96
-        ldr     r0, =CCCR_VALUE		//#define CCCR_VALUE        0x00000161		// |0010|0100|0001 0x241
+        ldr     r0, =CCCR_VALUE		//#define CCCR_VALUE        0x00000161	// |0010|0100|0001 0x241
         str     r0, [r12, #CCCR]	//Core Clock Configuration Register
+
+set_core_clock:		/* PXA250 Core Clock is set to Turbo Mode */
+        mov     r1, #0
+        mcr     p14, 0, r1, c6, c0, 0   //p14, c6, c0
         mov     r1, #3
         mcr     p14, 0, r1, c6, c0, 0   //p14, c6, c0
 
@@ -168,6 +175,8 @@ init_sdram:
 	ldr	r0, =0
 	str	r0, [r1]
 
+set_os_timer:		/* OS Timer initialization */
+	//Waiting OSCR
         ldr     r0, =0x300
 wait_for_clock:
         ldr	r2, [r1]
@@ -175,49 +184,59 @@ wait_for_clock:
         bne     wait_for_clock
 #endif
 
-        //Step 1 in Intel's code
+//Step 1 in Intel's code
+
 	//Memory Control Registers
 	//#define MEM_CTL_BASE      0x48000000
         ldr     r12, =MEM_CTL_BASE
 
 	//Develper's Manual P.229
-        ldr     r0, =MSC0_VALUE		//#define MSC0_VALUE        0x7ff87ff8//0x7ff87ff8//0xFFF03FF0//0x23F223F2//0x3FF83FF0
-        str     r0, [r12, #MSC0]	//Static Memory Control Register 0
+	/* Static Memory Control Register 0(MSC0): Nonburst ROM or Flash Memory  */
+        ldr     r0, =MSC0_VALUE		//#define MSC0_VALUE        0x7ff87ff8	//0x7ff87ff8//0xFFF03FF0//0x23F223F2//0x3FF83FF0
+        str     r0, [r12, #MSC0]
 
         //Intel's code reads it back to make sure it works...
-    //    ldr     r0, [r12, #MSC0]
-	
-        ldr     r0, =MSC1_VALUE		//#define MSC1_VALUE        0x12BC5554//0x12BC8240//0x5AA85AA8
-        str     r0, [r12, #MSC1]	//Static Memory Control Register 1
-        ldr     r0, [r12, #MSC1]
+        //    ldr     r0, [r12, #MSC0]
 
-        ldr     r0, =MSC2_VALUE 	//#define MSC2_VALUE        0x7FF87FF1//0x7FF17FF1//0x24482448
-        str     r0, [r12, #MSC2]	//Static Memory Control Register 2
+	/* Static Memory Control Register 1(MSC1): Variable Latency I/O (VLIO)  */
+        ldr     r0, =MSC1_VALUE		//#define MSC1_VALUE        0x12BC5554      //0x12BC8240//0x5AA85AA8
+        str     r0, [r12, #MSC1]	
+        ldr     r0, [r12, #MSC1]
+	/* Static Memory Control Register 2(MSC2): SRAM */
+        ldr     r0, =MSC2_VALUE 	//#define MSC2_VALUE        0x7FF87FF1	//0x7FF17FF1//0x24482448
+        str     r0, [r12, #MSC2]	
         ldr     r0, [r12, #MSC2]
 
+	/* MECR: Expansion Memory (PCMCIA/Compact Flash) Bus Configuration Register */
 	//Develper's Manual P.245
-        ldr     r0, =MECR_VALUE		//#define MECR_VALUE        0x00000000//0x00000002
-        str     r0, [r12, #MECR]	//Expansion Memory (PCMCIA/Compact Flash) Bus Configuration Register
+        ldr     r0, =MECR_VALUE		//#define MECR_VALUE        0x00000000	//0x00000002
+        str     r0, [r12, #MECR]
 	
+	/* MCMEM0: Card Interface slot 0 timing */
 	//Develper's Manual P.242
-        ldr     r0, =MCMEM0_VALUE 	//#define MCMEM0_VALUE      0x00010504//0x00020308
+        ldr     r0, =MCMEM0_VALUE 	//#define MCMEM0_VALUE      0x00010504	//0x00020308, 0x00004204
         str     r0, [r12, #MCMEM0]	//Card interface Common Memory Space Socket 0 Timing Configuration
 
-        ldr     r0, =MCMEM1_VALUE 	//#define MCMEM1_VALUE      0x00010504//0x00020308
+	/* MCMEM1: Card Interface slot 1 timing */
+        ldr     r0, =MCMEM1_VALUE 	//#define MCMEM1_VALUE      0x00010504	//0x00020308
         str     r0, [r12, #MCMEM1]	//Card interface Common Memory Space Socket 1 Timing Configuration
-
+	
+	/* MCATT0: Card Interface Attribute Space Timing, slot 0 */
 	//Develper's Manual P.243
-        ldr     r0, =MCATT0_VALUE 	//#define MCATT0_VALUE      0x00010504//0x00020308
+        ldr     r0, =MCATT0_VALUE 	//#define MCATT0_VALUE      0x00010504	//0x00020308
         str     r0, [r12, #MCATT0]    	//Card interface Attribute Space Socket 0 Timing Configuration
 
-        ldr     r0, =MCATT1_VALUE 	//#define MCATT1_VALUE      0x00010504//0x00020308
+	/* MCATT1: Card Interface Attribute Space Timing, slot 1 */
+        ldr     r0, =MCATT1_VALUE 	//#define MCATT1_VALUE      0x00010504	//0x00020308
         str     r0, [r12, #MCATT1]	//Card interface Attribute Space Socket 1 Timing Configuration
 	
+	/* MCIO0: Card Interface I/O Space Timing, slot 0 */	
 	//Develper's Manual P.243
-        ldr     r0, =MCIO0_VALUE	//#define MCIO0_VALUE       0x00004715//0x00020308
+        ldr     r0, =MCIO0_VALUE	//#define MCIO0_VALUE       0x00004715	//0x00020308
         str     r0, [r12, #MCIO0]	//Card interface I/O Space Socket 0 Timing Configuration
 
-        ldr     r0, =MCIO1_VALUE 	//#define MCIO1_VALUE       0x00004715//0x00020308
+	/* MCIO1: Card Interface I/O Space Timing, slot 1 */
+        ldr     r0, =MCIO1_VALUE 	//#define MCIO1_VALUE       0x00004715	//0x00020308
         str     r0, [r12, #MCIO1]	//Card interface I/O Space Socket 1 Timing Configuration
 
         //according to Intel's comments, we're extracting the DRI
@@ -231,9 +250,11 @@ wait_for_clock:
 	// configuring DRI and clearing KXFREE.  All other values
 	// MUST be left alone
 
+	/* SDRAM Controller initialized at 100MHz */
 	//Develper's Manual P.196
-        ldr     r0, =MDREFR_VALUE	//#define MDREFR_VALUE      0x000BC108//0x03CDF016//0x000BC018//0x00038016
-        ldr     r3, [r12, #MDREFR]	//SDRAM Refresh Control Register
+        ldr     r0, =MDREFR_VALUE	//#define MDREFR_VALUE      0x000BC108 <0x03c00fff>		//0x03CDF016//0x000BC018//0x00038016
+        ldr     r3, [r12, #MDREFR]	//SDRAM Refresh Control Registe
+
         ldr     r1, =0xFFF
         and     r0, r0, r1
 
@@ -291,7 +312,8 @@ wait_for_clock:
         nop
         nop
 
-        //Step 4 in Intel's code
+//Step 4 in Intel's code
+
 	//Develper's Manual P.190
         ldr     r0, =MDCNFG_VALUE	//#define MDCNFG_VALUE      0x00001AC9//0x0B000BC9
 
@@ -308,10 +330,14 @@ wait_for_clock:
         //write MDCNFG, without enabling SDRAM banks
         str     r0, [r12, #MDCNFG]	
 
-        //Step 5 in Intel's code
+//Step 5 in Intel's code
+
         ldr     r0, =OSCR
 	mov	r1, #0
 	str	r1, [r0]
+
+        /* SDRAM Controller initialized at 50MHz. */
+        /* pause for ~200usec for SDRAM to init */
 
         //pause for approx 200 usecs
         ldr     r4, =0x300
@@ -322,13 +348,15 @@ sdram_dly:
         cmp     r4, r1
         bgt     sdram_dly
 
-        //Step 6 in Intel's code
+//Step 6 in Intel's code
+
         //turn everything off
         mov     r0, #0x78
         mcr     p15, 0, r0, c1, c0, 0
 
 
-        //Step 7 in Intel's code
+//Step 7 in Intel's code
+
         //Access memory that has not been enabled for CBR refresh cycles (8)
 	ldr	r0, =SDRAM_BASE			//SDRAM Bank 0
         str     r0, [r0]
@@ -356,9 +384,9 @@ sdram_dly:
         //Step 10
 	//Develper's Manual P.194
         //write MDMRS again
+	///* and do an MRS */
         ldr     r0, =MDMRS_VALUE		//#define MDMRS_VALUE       0x00000000	
         str     r0, [r12, #MDMRS]		//MRS value to be written to SDRAM
-
 
         //Step 11
         //are we A1_Cotulla?
@@ -371,8 +399,6 @@ sdram_dly:
         str     r0, [r12, #MDREFR]
 
         mov     pc, r10
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////	 Copy Bootloader from Flash to SDRAM		///////////////
