@@ -44,7 +44,7 @@
 #define CKEN_VALUE        0x00000040
 #define OSCC_VALUE        0x00000002//0x00000002
 
-#define MEM_CTL_BASEOSCR              0x40A00010
+#define OSCR              0x40A00010
 #define CLK_TO_10MS	  36864         // 3.686400 Mhz
 
 //GPIO registers
@@ -107,7 +107,7 @@
 #define GAFR2U_VALUE      0x00000002
 
 //Memory Control Registers
-#define MEM_CTL_BASE      0x48000000MCMEM
+#define MEM_CTL_BASE      0x48000000
 
 #define MDCNFG            0x00
 #define MDREFR            0x04
