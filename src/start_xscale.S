@@ -252,8 +252,8 @@ wait_for_clock:
 
 	/* SDRAM Controller initialized at 100MHz */
 	//Develper's Manual P.196
-        ldr     r0, =MDREFR_VALUE	//#define MDREFR_VALUE      0x000BC108 <0x03c00fff>		//0x03CDF016//0x000BC018//0x00038016
-        ldr     r3, [r12, #MDREFR]	//SDRAM Refresh Control Registe
+        ldr     r0, =MDREFR_VALUE	//#define MDREFR_VALUE      0x000BC108
+        ldr     r3, [r12, #MDREFR]		//SDRAM Refresh Control Registe
 
         ldr     r1, =0xFFF
         and     r0, r0, r1
