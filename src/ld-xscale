@@ -4,12 +4,12 @@ OUTPUT_ARCH(arm)
 SECTIONS
 {
    . = ALIGN(4);
-   .text 0xA4000000 - 0x40000: 
+   .text 0xA4000000 - 0x40000: 		//ro_base
    {
       _ld_text_start = .;
       *(.text)
-      *(.got)
-      *(.got.pld)
+      *(.got)		//Global Offset Table
+      *(.got.pld)	
       *(.rodata)
       _ld_text_end = .;
    }

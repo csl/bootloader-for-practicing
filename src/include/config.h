@@ -37,7 +37,7 @@
 #define FLASHSIZE			(0x02000000)	// 32 MB.
 #endif
 
-#define USE_CS0_FLASH					// CS0에 Flash를 사용.
+#define USE_CS0_FLASH					
 
 #define SRAM_BASE_ADDR			(0x00000000)
 #define SRAM_SIZE			FLASHSIZE		

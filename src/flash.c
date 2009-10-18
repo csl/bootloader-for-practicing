@@ -39,7 +39,8 @@ static bool		FlashLock(FUNIT *addr);
 static bool		FlashUnlock();
 bool			FullStatusCheck(volatile FUNIT *addr, FLASH_ACTION which);
 
-bool DoWriteToFlashBlocks(CMD_TBL *cptr, int argc, char **argv){
+bool DoWriteToFlashBlocks(CMD_TBL *cptr, int argc, char **argv)
+{
 	long	dest=0, src=0, len, wsize;
 	
 	switch (argc){
@@ -113,7 +114,8 @@ bool DoWriteToFlashBlocks(CMD_TBL *cptr, int argc, char **argv){
 }	// DoWriteToFlashBlocks.
 
 
-bool WriteToFlashBuffer(void *dest, void *src){
+bool WriteToFlashBuffer(void *dest, void *src)
+{
 #ifdef XHYPER255A
 	int             i;
         volatile FUNIT *s1=dest, *s2=src, result, *end=s1+(FLASH_BLOCK_SIZE/FBOUND);
@@ -178,7 +180,8 @@ bool WriteToFlashBuffer(void *dest, void *src){
 }
 
 
-bool EraseFlashBlocks(FUNIT *addr, ulong len){
+bool EraseFlashBlocks(FUNIT *addr, ulong len)
+{
 	FUNIT	*ptr, *end=addr+len/FBOUND;
 
 	// erase block loop.
@@ -195,7 +198,8 @@ bool EraseFlashBlocks(FUNIT *addr, ulong len){
 }
 
 
-bool DoEraseFlashBlocks(CMD_TBL *cptr, int argc, char **argv){
+bool DoEraseFlashBlocks(CMD_TBL *cptr, int argc, char **argv)
+{
 	ulong	addr=0, len, end;
 	
 	switch (argc){
@@ -257,7 +261,8 @@ bool DoEraseFlashBlocks(CMD_TBL *cptr, int argc, char **argv){
 }	// DoEraseOneFlashBlock.
 
 
-static bool EraseOneFlashBlock(FUNIT *addr){
+static bool EraseOneFlashBlock(FUNIT *addr)
+{
 	volatile FUNIT	*s=addr;
 
 	// error.
@@ -272,7 +277,8 @@ static bool EraseOneFlashBlock(FUNIT *addr){
 }	// EraseOne.
 
 
-bool DoFlashLock(CMD_TBL *cptr, int argc, char **argv){
+bool DoFlashLock(CMD_TBL *cptr, int argc, char **argv)
+{
 	long	i, addr, len, cnt;
 	// error.
 	if (argc < 2){
@@ -318,7 +324,8 @@ bool DoFlashLock(CMD_TBL *cptr, int argc, char **argv){
 }	// DoFlashLock.
 
 
-bool DoFlashUnlock(CMD_TBL *cptr, int argc, char **argv){
+bool DoFlashUnlock(CMD_TBL *cptr, int argc, char **argv)
+{
 	// error.
 	if (argc != 1){
 		printf(cptr->usage);
@@ -331,7 +338,8 @@ bool DoFlashUnlock(CMD_TBL *cptr, int argc, char **argv){
 }	// DoFlashUnlock.
 
 
-bool FlashLock(FUNIT *addr){
+bool FlashLock(FUNIT *addr)
+{
 	volatile FUNIT	*s=addr;
 
 	// error.
@@ -349,7 +357,8 @@ bool FlashLock(FUNIT *addr){
 }	// FlashLock.
 
 
-bool FlashUnlock(void){
+bool FlashUnlock(void)
+{
 	volatile FUNIT	*s=(FUNIT *)FLASH_BASE;
 
 	// do command.
@@ -362,8 +371,9 @@ bool FlashUnlock(void){
 
 
 
-// error가 있으면 false, 아니면 true return.
-bool FullStatusCheck(volatile FUNIT *addr, FLASH_ACTION which){
+// error true return.
+bool FullStatusCheck(volatile FUNIT *addr, FLASH_ACTION which)
+{
 	FUNIT	result;
 	
 	// delay before command is done.

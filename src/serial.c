@@ -19,15 +19,14 @@
 #include "serial.h"
 #include "types.h"
 
+void SerialInit(ulong baud)
+{
 
-
-void SerialInit(ulong baud){
-
-   // GP39, GP40, GP41을 UART(10)로 사용한다.
-   GAFR1_L |= 0x000A8000;	
+   // GP39, GP40, GP41 UART(10)
+   GAFR1_L |= 0x000A8000;
    GPDR1   |= 0x00000380;
 
-   // 8-bit, 1 stop, no parity 세팅.
+   // 8-bit, 1 stop, no parity 
    FFLCR = 0x00000003;
 
    // Reset tx, rx FIFO. clear. FIFO enable
@@ -36,38 +35,37 @@ void SerialInit(ulong baud){
    // UART Enable Interrupt
    FFIER = 0x00000040;
 
-   // DLAB set=latch registers, DLAB clear=일반 포트.
+   // DLAB set=latch registers, DLAB clear=
    FFLCR |= 0x00000080;
 
-   // baud rate 설정. 
+   // baud rate
    FFDLL = baud;
 
-   // DLAB clear, 일반 포트로 전환.
+   // DLAB clear
    FFLCR &= 0xFFFFFF7F;
 
    // Transmit Shift Register, Transmit Holding Register, FIFO에 
-   // 데이타가 없을때까지 기다린다.
    while(! FFLSR & 0x00000040 );
 
    return;
 }
 
 
-void SerialOutputByte(const char c){
-
-	// FIFO에 데이타가 없을때까지 기다린다.
+void SerialOutputByte(const char c)
+{
+	// FIFO
 	while ((FFLSR & 0x00000020) == 0 );
 
 	FFTHR = ((ulong)c & 0xFF);
 
-	// c=='\n'이면, 실제로는 "\n\r"을 출력.
+	// c=='\n' "\n\r"
 	if (c=='\n') SerialOutputByte('\r');
 }
 
 
-int SerialInputByte(char *c){
-
-	// FIFO에 데이타가 있을때.
+int SerialInputByte(char *c)
+{
+	// FIFO
 	if((FFLSR & 0x00000001)==0){
 		return 0;
 	} else {

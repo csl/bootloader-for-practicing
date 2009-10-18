@@ -22,8 +22,8 @@
 #include <types.h>
 #include <xscale.h>
 
-#define FFUART_BASE		0x40100000
-#define FFRBR			(*((volatile ulong *)(FFUART_BASE+0x00)))
+#define FFUART_BASE	0x40100000
+#define FFRBR		(*((volatile ulong *)(FFUART_BASE+0x00)))
 #define FFTHR           (*((volatile ulong *)(FFUART_BASE+0x00)))
 #define FFIER          	(*((volatile ulong *)(FFUART_BASE+0x04)))
 #define FFIIR          	(*((volatile ulong *)(FFUART_BASE+0x08)))
@@ -39,13 +39,9 @@
 
 #define SERIAL_BAUD_115200 (0x00000008)
 
-
 void SerialInit(ulong);
 void SerialOutputByte(const char);
 int SerialInputByte(char *);
-
-
-		
 
 #endif
 

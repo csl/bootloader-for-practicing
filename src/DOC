@@ -1,0 +1,231 @@
+開始學習Xbase板子上自帶的linux光盤釐米的bootloader
+根目錄下Makefile，很簡短，兩條規則，一條以偽目標做最終缺省目標的規則加另外一toa偽目標規則，很好理解，進入src目錄進行make
+
+
+先看Makefile和ld-xscale兩個文件
+
+1. Makefile：
+
+定義好相關變量，好好學習Makefile文件相關知識就明白了，再定義all偽目標為最終目標，後面都好理解「$<」是自動變量，代表目標中的第一量，在
+ .s.o :
+    $(COMPILE) -c $<
+中代表「.s」
+
+順便學習gcc編譯的一些參數
+
+-nostdinc   不要在標準系統目錄中尋找頭文件.只搜索`-I'選項指定的目錄(以及當前目錄,如果合適).結合使用`-nostdinc'和`-I-'選項,我們就可以把包含文件搜索限制在顯式指定的目錄.
+-mcpu=strongarm110  規定目標ARM處理器的類型，這樣gcc就會產生相應的彙編代碼
+-mapcs-32  ARM處理器相關的選項
+-fomit-frame-pointer  優化選項，對有些函數，不把frame pointer保存在一個寄存器中，這樣就避免了那些保存，還原frame pointers的指令，還有使得函數多一個額外的寄存器可用
+-fPIC   目標機器支持的話，生成目標無關的代碼，支持動態連接
+-Wall  打開所有警告選項
+
+OCFLAGS = -O binary -R .note -R .comment –S  這是objdump的選項，去除所有.note .comment 和符號信息，生成二進制格式文件
+LDFLAGS = -static –nostdlib  連接參數， -static是不連接共享庫，–nostdlib，
+
+僅搜索那些在命令行上顯式指定的庫路徑. 在連接腳本中(包含在命令行上指定的連接腳本)指定的庫路徑都被忽略.
+
+2. ld-xscale：
+
+查詢學習報告002種關於ld文件的說明，體會次文件內容
+看.text 段
+
+.text 0xA4000000 - 0x80000: 
+
+//0xA4000000查手冊是第二塊SDRAM的起始地址，
+//那麼在這裡安裝002報告的學習，就是相當設置ARM映像文件的ro_base值了，
+//地址在第一塊SDRAM最後512K處了，
+
+   {
+      _ld_text_start = .;   //定義了.test 段開始地址量，在就是上面的0xA4000000 - 0x80000
+      *(.text)          //在鏈接所有要鏈接文件的 .text .got .got.pld .rodata 段，其中.got .got.pld 兩種段沒見過，得查ld手冊了
+      *(.got)
+      *(.got.pld)
+      *(.rodata)
+      _ld_text_end = .;
+   }
+   _ld_text_size = SIZEOF(.text);  //得到 .text  段的大小量
+
+再看 .data段
+.data _ld_text_end : AT(ADDR(.text) + SIZEOF(.text))   
+
+//_ld_text_end為 .data 段的起始地址，AT(ADDR(.text) + SIZEOF(.text)  這在002報告中沒有講述，我也就不明白了，
+
+查詢ld手冊，也是為了 .data 段load時load到AT（）中地址，儘管它的relocation地址可能不是這個，比如手冊上舉的例子，引用手冊上原話
+
+AT ( LDADR )'
+     The expression LDADR that follows the `AT' keyword specifies the
+     load address of the section.  The default (if you do not use the
+     `AT' keyword) is to make the load address the same as the
+     relocation address.  This feature is designed to make it easy to
+     build a ROM image.  For example, this `SECTIONS' definition
+     creates two output sections: one called `.text', which starts at
+     `0x1000', and one called `.mdata', which is loaded at the end of
+     the `.text' section even though its relocation address is
+     `0x2000'.  The symbol `_data' is defined with the value `0x2000':
+
+     SECTIONS
+     {
+            .text 0x1000 : { *(.text) _etext = . ; }
+            .mdata 0x2000 :
+              AT ( ADDR(.text) + SIZEOF ( .text ) )
+              { _data = . ; *(.data); _edata = . ;  }
+            .bss 0x3000 :
+              { _bstart = . ;  *(.bss) *(COMMON) ; _bend = . ;}
+     }
+
+.mdata段中0x2000有什麼用處?
+這裡就是要明白LMA和VMA的區別，應該是LMA是加載域的地址，
+VMA是運行時域的地址了那麼AT中的地址就是LMA，而.text .data後面的地址是VMA了，這裡很關鍵，得明白
+
+（在最後生成的elf文件中，程序頭表結束到.text 開始處有很多0，.text到0x8000，32K處，
+在readelf查看時是在程序頭中這個segment有0x8000對齊的要求，但在這連接腳本中看不出啊？？？）
+
+到最後，定義了  _ld_stack_address = _ld_text_start + 0x80000; 這個量，那麼在這裡這個_ld_stack_address不就是0xA4000000嗎？為什麼要這麼用一個表達式了，是不是為了程序清晰？並且這樣就可以看出整個bootload 大小不能超過這個0x800000，512K了
+（對了，看config.h，中定義的LOADER_MAX_SIZE(0x00040000)   大小最大為256K）
+
+還這裡，這些地址都是定義在SDRAM空間裡，最開始bootload不是要在flash中運行嗎？這中間地址轉化是個什麼過程了？？（這就是要搞清楚地址捲繞的問題，儘管出現了地址捲繞但PC中的值是正確的，要搞清楚，要畫出初始化時的內存分配圖，每次變動內存控制器，就要在心裡清楚此時的內存結構圖）
+
+3. start_xscale.S：
+
+這是 .S   大後綴，會預處理，可以用include指令， _start  是在上面ld文件中通報了程序初始入口點，只有一條b指令，這裡迷糊了，他在在合理不排列中斷向量表嗎？不把指令 派到0x20處嗎？
+
+======================================================================================
+
+然後就是reset部分，屏蔽所有中斷，ICMR和ICLR定義如下：（來自上機指導）
+Interrupt Controller Mask register (ICMR)
+
+該寄存器能夠屏蔽中斷源，寄存器上每1位對應一個中斷源，只要在相應的位上設置0，就能屏蔽響應的中斷。系統復位後，該寄存器全為0，即所有的中斷源都被屏蔽
+Interrupt Controller Level register (ICLR)
+
+該寄存器能夠決定中斷源以IRQ或FIQ中斷方式被處理。
+只要中斷源沒有被屏蔽，設置該寄存器後，如果是以IRQ中斷方式被處理，則ICIR相應位會置1，如果是以FIQ中斷方式被處理，則ICFR相應位會置1。系統復位後該寄存器全為0，則表示所有的中斷源都以IRQ方式被處理。這裡好像有不同的屏蔽所有中斷的方式，好些程序都不一樣，
+======================================================================================
+然後三個子程序，GPIO，SDRAM，初始化，把自己考到RAM中，然後開始裝載內核，裝載內核利用三個變量 KERNEL_SRAM_BASE，KERNEL_DRAM_BASE，KERNEL_MAX_SIZE，具體是什麼值，以後再說，拷貝完畢後，裝入 _ld_stack_address值到sp，轉入到主程序  c_main   
+
+Gpio_init:
+（GPFR是功能選擇，GPSR&GPCR是設置/清除輸出pin的值，GPDR就是設置pin是輸入還是輸出了）
+六個GPIO Alternate Function Register，GAFR0_L, GAFR0_U, GAFR1_L, GAFR1_U, GAFR2_L, GAFR2_U, 定義85根GPIO針的功能選擇，他們初始值常量，在 .h  文件中定義，
+#define GAFR0L_VALUE      0x80000000
+#define GAFR0U_VALUE      0xA5000010
+#define GAFR1L_VALUE      0x60008018
+#define GAFR1U_VALUE      0xAAA5AAAA
+#define GAFR2L_VALUE      0xAAA0000A
+#define GAFR2U_VALUE      0x00000002
+具體值，對照手冊，121頁開始，其中GPIO第15（0L-80），0U中A5 就是第29，30，31位10，第28 為01 ，1L中，pin47=01，pin46=10，pin39=10，pin34=01，1U中 pin63,62,61,60,59,58,57,55,54,53,52,51,50,49,48=10,pin56=01,在2L中 pin79,78,77,76,75,74,65,64=10,在2U中，pin80=10，總結一下，pin （15，29，30，31，39，46，48，49，50，51，52，53，54，55，57，58，59，60，61，62，63，64，65，74，75，76，77，78，79，80）為10，pin （28，34，47，56）為01，其他全為0；
+再把設置三個GPSR的值為
+#define GPSR0_VALUE       0x00408030//   00000000010000001000000000110000
+#define GPSR1_VALUE       0x00BFA882//  00000000101111111010100010000010
+#define GPSR2_VALUE       0x0001C000//   00000000000000011100000000000000
+定義為1的位就設置該IO口為1
+再設置三個GPCR值
+#define GPCR0_VALUE       0xC0031100//
+#define GPCR1_VALUE       0xFC400300
+#define GPCR2_VALUE       0x00003FFF
+再三個GPDR，
+#define GPDR0_VALUE       0xC0439330//
+#define GPDR1_VALUE       0xFCFFAB82
+#define GPDR2_VALUE       0x0001FFFF
+Datasheet上的例子說設置GPIO的其他功能時要先設置GPSR&GPCR，在設GPDR，在設GAFR，但這裡好像恰好相反哦）
+再接下來的PSSR，PSSR_RDH ,PSSR_PH,參考手冊91頁就瞭解了，屬於電源管理中睡眠狀態時GPIO的處理
+GPIO初始化完畢。主要初始化了中斷，GPIO
+======================================================================================
+
+開始init_sdram:
+這部分最煩，主要是對SDRAM，ROM各部分機理還不清楚，先看拷貝到RAM中代碼
+比較好理解，就是在ld文件定義了的_ld_text_start，_ld_text_and_data_size變量，從flash地址0，
+
+拷貝到 _ld_text_start（0xA4000000-0x800000），長度是_ld_text_and_data_size，在實際運行過程中，
+這些地址怎麼個過渡法，現在還不是很清楚了，這裡就是要有加載時域和運行時域的概念了，在前面內存初始化已經建立了初始的內存圖，
+
+這時，代碼中，拷貝的源基地址r0為0，就是加載域的起始地址
+目的的基地址ld_text_start就是運行時域的起始地址，只有這樣才能保證後面的地址訪問是正確的，
+這裡，要根據內存初始圖仔細體會，我現在還沒搞清楚內存初始化，所有這裡也不明白，也不敢下手該地址，等完全明白了內存地址的變化後，
+再動手修改連接腳本中的地址，實現XIP的終極目標，能夠XIP時，這裡肯定要修改了，只要拷貝.data到RAM中去就可以了
+我認為，在這裡一定要搞懂這裡的內存初始化代碼才繼續下面主函數的理解
+======================================================================================
+
+先設置CCCR，CLOCK_MANAGER_BASE在0x41300000，
+設置L，M，N，手冊96頁開始，
+先設CKEN，和OSCC，設 CKEN（使能外圍功能模塊），
+使FFUART Unit Clock使能，FFUART的功能還不明白，
+其他的外網功能塊的時鐘都先不使能，OSCC使能32.768KHz晶體
+打開OON，使得RTC和PM可以用這個脈衝了
+
+然後設CCCR，0000 0010 0100 0001 N=100，M=10，L= 00001，
+那麼Memory Frequency為27陪3.6864MHz,99.53MHz,大概100M，M=2，Run Mode Frequecy為200MHz了，
+N=2，則Turbo Mode Frequecy 為400MHz了，
+在設置協處理器P14， FCS=1，TURBO=1，Enter frequency change sequence Enter turbo mode,
+在設OSCR為0，再等待0x300個脈衝，
+再設置MSCx，手冊229頁，注意這個MSCx的作用，是配置跟片選信號nCS(1:0), nCS(3:2), and nCS(5:4)相關的靜態內存
+感覺這裡是理解芯片存儲器空間配置的關鍵了，這需要好心情好狀態才能明白啊，datasheet又沒有中文翻譯
+
+#define MSC0_VALUE      0x7FF87FF0 
+從後往前讀，000-Nonburst ROM/Flash Memory，0-32bit，1111-RDF為23，1111-RDNx，對照手冊讀一下（這裡對著手冊也理解不了啊，鬱悶啊）
+#define MSC1_VALUE        0x12BC5554
+#define MSC2_VALUE        0x7FF97FF1（這裡在我的板子上，只有一塊Intelâ strata flash 32MByte 的flash芯片，那不知道這裡設著幹嘛去了）
+根據手冊上建議，設置後要再讀回一次，確保有效。
+MECR 為00000000，MCMEMO0，MCMEMO1，MCATT0，MCATT1，MCIO0，MCIO1手冊263，是關於Expansion Memory (16-bit PC Card / Compact Flash) Bus Configuration register 的，我的板子上也沒有吧，我現在還不清楚？
+接下來是干什麼的11步，「extracting the DRI」不知是什麼啊，好鬱悶啊，不知道最好從哪裡開始下手查資料啊
+
+根據程序註釋，是要做DRI，就是當有GPIO reset時要在刷新間隔裡刷新SDRAM，現在還不是很明白，好像這樣的目的都是為了正確的配MDREFR[DRI],
+明白了這裡的步驟是根據datasheet 261頁上建議的，看來手冊整個第六部分都得好好看一遍才行，先看這裡吧
+第一步：說首先設置K0RUN和 E0PIN，清除 KXFREE
+#define MDREFR_VALUE      0x000BC018  （0  1011 1100 0000 0001 1000）
+這裡對照手冊198頁看，r0即上面的VALUE，跟r1＝0xfff與後，只有018即DRI的值了，
+bic     r3, r3, r1   先把r3中的DRI清零，
+bic    r3, r3, #0x03800000  再把KxFREE清零，使SDRAM not free-running，
+orr     r3, r3, r0  此時，r0只剩DRI值為018了，這時，r3中的DRI也為018了
+str     r3, [r12, #MDREFR]   這時就可以寫回去了，
+這裡的MDREFR_VALUE不知道具體有什麼用，直接把r0設為0x018，不就可以了，為什麼要通過MDREFR_VALUE了？這裡也沒有設置K0RUN和E0PIN
+第二步：主要是針對有Synchronous Static memory的設置，我們板子沒有，就跳過
+第三步：這步是對有SDRAM的系統來說的，要通過以下步驟轉變SDRAM控制器
+a. self-refresh and clock-stop
+ b. self-refresh
+c. power-down
+d. PWRDNX
+e. NOP
+源碼中也沒做這步，認為前面已經做過了，但又說最好在這裡放上Self-Refresh Disable，步明白
+第四步：手冊上的步驟好像就是說上面第三步怎麼變換
+寫 MDREFR:K1RUN, K2RUN 配置MDREFR:K1DB2,K2DB2.
+寫MDREFR:SLFRSH
+======================================================================================
+
+4. main.c 
+
+文件中的C語言主函數，c_main( )執行，
+src下面start_xscale.S和start_xscale.c文件是一樣的，為什麼要這麼安排了？
+看include目錄下的config.h文件
+
+先根據板子型號是XHYPEr255A還是B，定義FLAHSHSIZE是16M還是32M，在這裡肯定是32M了
+#define SRAM_BASE_ADDR            (0x00000000)     靜態內存基址
+#define SRAM_SIZE            FLASHSIZE     大小，32M
+#define SRAM_BLOCK_SIZE            (0x00040000)   塊大小，256K
+
+#define DRAM_BASE_ADDR            (0xA0000000)   SDRAM的基址，
+#define DRAM_SIZE            (0x02000000)     SDRAM大小，32M？？？應該是此時只
+需要32M就可以了
+
+#define LOADER_DRAM_MAX_SIZE    (0x00010000)  loader在DRAM裡最大大小64K
+#define LOADER_SRAM_MAX_SIZE    (0x00040000)  在SRAM裡256K
+#define LOADER_DRAM_BASE        (DRAM_BASE_ADDR+DRAM_SIZE-LOADER_DRAM_MAX_SIZE) loader在DRAM中基址
+#define STACK_POINT            (DRAM_BASE_ADDR+DRAM_SIZE-LOADER_DRAM_MAX_SIZE-4)  棧指針
+
+#define KERNEL_SRAM_BASE        (0x000C0000)    內核在SRAM基址在3*256K，即第
+四塊block開始處
+#define KERNEL_DRAM_BASE        (0xA0008000)  在DRAM中是ＤＲＡＭ基址＋１６Ｋ處
+#define KERNEL_MAX_SIZE            (0x00200000)　　內核最大為２M
+#define NUM_KERNEL_BLOCKS    (KERNEL_MAX_SIZE / SRAM_BLOCK_SIZE) 8塊
+
+#define ROOT_SRAM_BASE            (0x002C0000)   在1011*256K處，第12塊開始處
+#define ROOT_DRAM_BASE            (0xA0000000)   在DRAM基址處
+#define ROOT_MAX_SIZE            (0x01D00000)     最大30M
+#define NUM_RAMDISK_BLOCKS        (RAMDISK_MAX_LEN / SRAM_BLOCK_SIZE)
+
+#define LOADER_SRAM_BASE        (0x00000000)    在SRAM中基址0，
+#define LOADER_MAX_SIZE            (0x00040000)   大小最大為512K
+#define NUM_LOADER_BLOCKS        (LOADER_MAX_LEN / SRAM_BLOCK_SIZE)
+這個文件定義了loader,kernel,root 三部分的地址參數量，
+把ROOT_DRAM_BASE定義到DRAM_BASE_ADDR,想不清為什麼，還要這裡的ROOT_MAX_SIZE設為30M，也不明白，
+
+開始看init_sdram: 

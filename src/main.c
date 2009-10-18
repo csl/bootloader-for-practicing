@@ -33,7 +33,8 @@ LOADER_STATUS	status;
 bool	DoPrintfHelp		(int argc, char **argv);
 
 
-void c_main(){
+void c_main()
+{
 	int		i;
 	bool	autoboot=true;
 	char	cmd[128];
@@ -46,7 +47,7 @@ void c_main(){
 	status.terminalSpeed = SERIAL_SPEED;
 	status.downloadSpeed = SERIAL_DOWNLOAD_SPEED;
 
-	///// initiate serial and timer. //////////////////////////////////////////
+	/* initiate serial and timer */
 	// serial and timer init.
 	SerialInit(status.terminalSpeed);
 	TimerInit();
@@ -71,7 +72,7 @@ void c_main(){
 
 		printf(".");
 		while (GetTime()<timeout){
-			if ((FFLSR & 0x00000001)){	// Serial로 Input이 있을 때.
+			if ((FFLSR & 0x00000001)){	// Serial
 				FFRBR;
 				autoboot = false;
 				break;
@@ -81,8 +82,9 @@ void c_main(){
 	}
 
 
-	///// No key was pressed, so proceed booting the kernel. //////////////////
-	if (autoboot){
+	/* No key was pressed, so proceed booting the kernel. */
+	if (autoboot)
+	{
 		printf("Autoboot started.\n");
 		for (cptr=cmdTbl; cptr->cmd; cptr++){
 			if (!StrCmp(cptr->cmd, "boot")) break;
@@ -91,13 +93,13 @@ void c_main(){
 	}
 
 
-	///// Key was pressed, so proceed command mode. ///////////////////////////
+	/* Key was pressed, so proceed command mode. */
 	printf("\nAutoboot aborted\n");
 	printf("Type \"help\" to get a list of commands\n");
 
 	// the command loop. endless, of course.
 	for(;;) {
-		DisplayPrompt("MT608>");
+		DisplayPrompt("bootloader>");
 
 		// wait an hour to get a command.
 		GetCommand(cmd, 128, 3600);

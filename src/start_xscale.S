@@ -376,10 +376,7 @@ sdram_dly:
         //Step 9
 	//Develper's Manual P.190
         ldr     r0, [r12, #MDCNFG]		//SDRAM Configuration Register 0
-
-        //enable bank 0 (what about bank 1?)
-	//Develper's Manual P.190
-        orr     r0, r0, #0x00000001
+        orr     r0, r0, #0x00000001	        //enable bank 0 (what about bank 1?)
         str     r0, [r12, #MDCNFG]		//SDRAM Configuration Register 0
 
         //Step 10
@@ -393,7 +390,6 @@ sdram_dly:
         //are we A1_Cotulla?
 	//Develper's Manual P.196
         ldr     r0, [r12, #MDREFR]		//SDRAM Refresh Control Register
-
 	ldr	r11, =0xFFEFFFFF
 	and	r0, r0, r11
 
