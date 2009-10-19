@@ -51,7 +51,7 @@ void c_main()
 	// serial and timer init.
 	SerialInit(status.terminalSpeed);
 	TimerInit();
-        printf("\n\nFFUART has been initiated");
+         printf("\n\nFFUART has been initiated");
 
 	//// printf the required GPL string. //////////////////////////////////////
 	printf("\n\n");

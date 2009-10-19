@@ -27,7 +27,8 @@ void wait(int sec)
      while(GetTime()<timeout);
 }
 
-bool EthTx(void *txPktBuf, int len){
+bool EthTx(void *txPktBuf, int len)
+{
 	short  *endPtr;
         uchar *s;
         long timeout;
@@ -105,7 +106,8 @@ bool EthTx(void *txPktBuf, int len){
 }	// EthTx.
 
 
-int EthRx(void *rxPktBuf){
+int EthRx(void *rxPktBuf)
+{
 	int		i;
 	char	*s;
         long timeout;
@@ -160,7 +162,8 @@ int EthRx(void *rxPktBuf){
 	return true;
 }	// EthRx.
 
-bool EthInit(){
+bool EthInit()
+{
         int i;
         short  iobase;
         ushort phyid1=0;
@@ -168,12 +171,16 @@ bool EthInit(){
         ushort phycfg1=0;
         ushort temp,status=0;
         uchar ch;
-        GAFREG0_L = GAFREG0_L | GAFREG0_VALUE;//gp15 alternate function
-        GAFREG1_U = GAFREG1_U | GAFREG1_VALUE;//gp48,49,50,52,53 alternate function
-        GAFREG2_L = GAFREG2_VALUE;//GPIO 79alternate function
-        GPDREG0 = GPDREG0 | GPD0_VALUE;//GP15 out direction
-        GPDREG1 = GPDREG1 | GPD1_VALUE;//GP49 out direction
-        GPDREG2 = GPD2_VALUE;//GP79 out direction
+
+        //#define GAFREG0_VALUE 0x80000000
+        GAFREG0_L = GAFREG0_L | GAFREG0_VALUE;	//GP15 alternate function
+        //#define GAFREG1_VALUE 0x00000A2A
+        GAFREG1_U = GAFREG1_U | GAFREG1_VALUE;	//GP48,49,50,52,53 alternate function
+        //#define GAFREG2_VALUE 0x80000000
+        GAFREG2_L = GAFREG2_VALUE;			//GPIO 79 alternate function
+        GPDREG0 = GPDREG0 | GPD0_VALUE;		//GP15 out direction
+        GPDREG1 = GPDREG1 | GPD1_VALUE;		//GP49 out direction
+        GPDREG2 = GPD2_VALUE;			//GP79 out direction
 
         //Enable chip to start to work if it exists.
 	MemSet((char *)0x04000000, 0x0, 2);
@@ -199,10 +206,10 @@ bool EthInit(){
         
         ReadReg(PHY_CFG1,&phycfg1);
         phycfg1=phycfg1|0x8000;
-        WriteReg(PHY_CFG1,phycfg1);//enter dislink mode
+
+        WriteReg(PHY_CFG1,phycfg1);	//Enter dislink mode
         WriteReg(PHY_CNTR,0x2100);
         
-
         //set STRIP_CRC,DUPLEX,100M SPEED bit
      
         BANK_SELECT=BANK0;
@@ -227,27 +234,28 @@ bool EthInit(){
         MAC_ADDR4 = clientEther[4];
         MAC_ADDR5 = clientEther[5];
         ch = MAC_ADDR5;
+
         printf("the mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
         
 	//Enable Autorelease,enbable transmit error interrupt bit into EPH interrupt status.
 	IO_CTR = 0x08E0;
         printf("the value of IO_CTR is %x\n",IO_CTR);
        
-        //enable multicast address.
+        //Enable multicast address.
         BANK_SELECT = BANK3; 
         IO_MT01 = 0xffff;
         IO_MT23 = 0xffff;
         IO_MT45 = 0xffff;
         IO_MT67 = 0xffff;
 	
-        //generate interrupt when the number of bytes in memory for received packets exceed 64*threshold
+        //Generate interrupt when the number of bytes in memory for received packets exceed 64*threshold
         IO_ERCV = 0x001f;
     
         //test PHY ID
          ReadReg(PHY_ID1,&phyid1);
          ReadReg(PHY_ID2,&phyid2);
-            printf("phyid1 is %x\n",phyid1);
-            printf("phyid2 is %x\n",phyid2);
+         printf("phyid1 is %x\n",phyid1);
+         printf("phyid2 is %x\n",phyid2);
 
         //PHY is set as 100m speed,duplex
         /* WriteReg(PHY_CNTR,0x2100);
@@ -255,11 +263,14 @@ bool EthInit(){
          printf("PHY_CNTR is %x\n",phyid1);
          WriteReg(PHY_CFG1,0x0020);
          WriteReg(PHY_CFG2,0x0000);*/
+
          BANK_SELECT=BANK2;
          while((IO_MMUCR&0x0001));
          IO_MMUCR=0x0040;
          while((IO_MMUCR&0x0001));
+
          for(i=0;i<5;i++);
+
          /*ReadReg(STATUS_OUT,&phyid1);
          if(phyid1&0x4000)
              printf("link fail\n");       
@@ -268,7 +279,9 @@ bool EthInit(){
              printf("link successfully\n");*/
 	return true;
 }	// EthInit.
-void SetMiiFrame(uchar * framebuf,uchar read,uchar write,uchar regadd,ushort data){
+
+void SetMiiFrame(uchar * framebuf,uchar read,uchar write,uchar regadd,ushort data)
+{
      uchar * ptr;
      ptr = framebuf;
      *((ulong *)ptr) = 0xffffffff;//IDLE
@@ -291,7 +304,8 @@ void SetMiiFrame(uchar * framebuf,uchar read,uchar write,uchar regadd,ushort dat
      }
 }
 
-void SendReadFrame(uchar *framebuf,ushort * ptr){
+void SendReadFrame(uchar *framebuf,ushort * ptr)
+{
      int i,j,k;
      ushort temp=0;
      uchar read=0;
@@ -328,7 +342,8 @@ void SendReadFrame(uchar *framebuf,ushort * ptr){
 }
 
 
-void SendWriteFrame(uchar *SendFrame){
+void SendWriteFrame(uchar *SendFrame)
+{
      int i,j,k;
      ushort temp;
      BANK_SELECT=BANK3;
@@ -354,7 +369,8 @@ void SendWriteFrame(uchar *SendFrame){
     IO_MGMT=IO_MGMT|MDCLK|MDOE;
 }
     
-void ReadReg(uchar reg,ushort * ptr){
+void ReadReg(uchar reg,ushort * ptr)
+{
     int i;
     SetMiiFrame(SendFrameBuf,1,0,reg,0);
     //printf("Read frame to be send is");
@@ -363,7 +379,8 @@ void ReadReg(uchar reg,ushort * ptr){
     SendReadFrame(SendFrameBuf,ptr);
     
 }
-void WriteReg(uchar reg,ushort data){
+void WriteReg(uchar reg,ushort data)
+{
    int i;
    SetMiiFrame(SendFrameBuf,0,1,reg,data);
   // printf("write frame is");
@@ -373,8 +390,10 @@ void WriteReg(uchar reg,ushort data){
    
 }
  
-void EthHalt(void){
+void EthHalt(void)
+{
 }
 
-void EthRestart(void){
+void EthRestart(void)
+{
 }

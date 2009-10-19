@@ -37,19 +37,22 @@ typedef struct {
 
 // GPIO register
 #define GPIOREG_BASE 0x40E00000
-#define GAFREG0_L (*((volatile ulong *)(GPIOREG_BASE + 0x54)))//gpio(15) alternate function
-#define GAFREG1_U (*((volatile ulong *)(GPIOREG_BASE + 0x60)))//gpio(49) alternale function
-#define GAFREG2_L (*((volatile ulong *)(GPIOREG_BASE + 0x64)))//gpio(49) alternale function
-#define GAFREG0_VALUE 0x80000000//gpio15 alternate function
-#define GAFREG1_VALUE 0x00000A2A//0x00000008 gpio48,49,50,52,53 alternate function
-#define GAFREG2_VALUE 0x80000000//gpio 79 alternate function
+#define GAFREG0_L (*((volatile ulong *)(GPIOREG_BASE + 0x54))) //gpio(15) alternate function
+#define GAFREG1_U (*((volatile ulong *)(GPIOREG_BASE + 0x60))) //gpio(49) alternale function
+#define GAFREG2_L (*((volatile ulong *)(GPIOREG_BASE + 0x64))) //gpio(79) alternale function
+
+#define GAFREG0_VALUE 0x80000000  //gpio15 alternate function
+#define GAFREG1_VALUE 0x00000A2A  //0x00000008 gpio48,49,50,52,53 alternate function
+#define GAFREG2_VALUE 0x80000000  //gpio 79 alternate function
 
 #define GPDREG0 (*((volatile ulong *)(GPIOREG_BASE + 0x0c)))
 #define GPDREG1 (*((volatile ulong *)(GPIOREG_BASE + 0x10)))
 #define GPDREG2 (*((volatile ulong *)(GPIOREG_BASE + 0x14)))
+
 #define GPD0_VALUE 0x00008000//GP15 OUT
 #define GPD1_VALUE 0x00370000//x00370000 //GP48,49,50,52,53 OUT
 #define GPD2_VALUE 0x00008000//gp79 out
+
 // IO Mapped Packet Page.
 #define	IO_BASE		0x04000000
 #define BANK_SELECT	*((volatile short *)(IO_BASE + 0x0000000E))	// Bank select.
@@ -137,12 +140,13 @@ typedef struct {
 #define MDOE 0x0008
 #define MDCLK 0x0004
 #define MDO  0x0001
+
+
 bool	EthInit();					// Initialize the device.
 bool	EthTx(void *pkt, int len);	// Send a packet.
+
 #define IO_REV      *((volatile short  *)(IO_BASE + 0x0000000A))// revision reg.
 #define IO_ERCV     *((volatile short  *)(IO_BASE + 0x0000000C))// early rcv reg.
-
-
 
 bool	EthInit();					// Initialize the device.
 bool	EthTx(void *pkt, int len);	// Send a packet.
