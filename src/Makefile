@@ -15,16 +15,14 @@
 #
 #//////////////////////////////////////////////////////////////////////////////
 
-CC = /usr/local/hybus-arm-linux-R1.1/bin/arm-linux-gcc
-OBJCOPY = /usr/local/hybus-arm-linux-R1.1/bin/arm-linux-objcopy
+CC = arm-linux-gcc
+OBJCOPY = arm-linux-objcopy
 INCLUDE = -I./include
 CFLAGS = -O2 -nostdinc -mcpu=strongarm110 -mapcs-32 -fomit-frame-pointer -fPIC $(INCLUDE)  -Wall $(CFLAGSII)
 OCFLAGS = -O binary -R .note -R .comment -S
 LDFLAGS = -static -nostdlib
 ELF32_LDFLAGS = -Wl,-T,ld-xscale
 COMPILE = $(CC) $(CFLAGS)
-
-
 
 CFILES = $(wildcard *.c)
 SFILES = $(wildcard *.S)
