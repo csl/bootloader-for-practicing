@@ -79,15 +79,15 @@
 #define GAFR2_U           0x68
 
 //GPIO initial values
-#define GPDR0_VALUE       0xC0439330//0xC05BE830//0xC05BB130//0xC05B91F0
+#define GPDR0_VALUE       0xC0439330               //0xC05BE830//0xC05BB130//0xC05B91F0
 #define GPDR1_VALUE       0xFCFFAB82
 #define GPDR2_VALUE       0x0001FFFF
 
-#define GPSR0_VALUE       0x00408030//0x00588020//00588030//0x00588020
+#define GPSR0_VALUE       0x00408030                //0x00588020//00588030//0x00588020
 #define GPSR1_VALUE       0x00BFA882
 #define GPSR2_VALUE       0x0001C000
 
-#define GPCR0_VALUE       0xC0031100//0xC0033110//0xC00311D0
+#define GPCR0_VALUE       0xC0031100                //0xC0033110//0xC00311D0
 #define GPCR1_VALUE       0xFC400300
 #define GPCR2_VALUE       0x00003FFF
 
@@ -103,7 +103,7 @@
 #define GAFR0U_VALUE      0xA5000010
 #define GAFR1L_VALUE      0x60008018
 #define GAFR1U_VALUE      0xAAA5AAAA
-#define GAFR2L_VALUE      0xAAA0000A
+#define GAFR2L_VALUE      0xAAAAAAAA
 #define GAFR2U_VALUE      0x00000002
 
 //Memory Control Registers
