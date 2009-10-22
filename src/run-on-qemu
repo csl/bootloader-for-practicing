@@ -1,0 +1,7 @@
+#!/bin/sh
+
+qemu-system-arm \
+        -M connex \
+        -pflash flash-image \
+        -serial stdio
+
