@@ -154,7 +154,7 @@ init_sdram:
         ldr     r0, =OSCC_VALUE		//#define OSCC_VALUE        0x00000002
         str     r0, [r12, #OSCC]		//Oscillator Configuration Register
 
-#if 1
+//#if 1
 //TODO: Issuing a FCS on a B1 seems to make it crash
 //shortly after. Figure out why...
 
@@ -172,21 +172,22 @@ set_core_clock:		/* PXA250 Core Clock is set to Turbo Mode */
         mov     r1, #3
         mcr     p14, 0, r1, c6, c0, 0   //p14, c6, c0
 
-	//Develper's Manual P.141
-	//#define OSCR              0x40A00010
-	//Reset OSCR
-	ldr	r1, =OSCR		//OS Timer Count Register
-	ldr	r0, =0
-	str	r0, [r1]
 
 set_os_timer:		/* OS Timer initialization */
+        //Develper's Manual P.141
+        //#define OSCR              0x40A00010
+        //Reset OSCR
+        ldr	r1, =OSCR		//OS Timer Count Register
+        ldr	r0, =0
+        str	r0, [r1]
+
 	//Waiting OSCR
         ldr     r0, =0x300
-wait_for_clock:
+1:
         ldr      r2, [r1]
         cmp     r0, r2
-        bne     wait_for_clock
-#endif
+        bgt 1b
+//#endif
 
 //Step 1 in Intel's code
 

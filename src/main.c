@@ -50,8 +50,9 @@ void c_main()
 	/* initiate serial and timer */
 	// serial and timer init.
 	SerialInit(status.terminalSpeed);
-	TimerInit();
          printf("\n\nFFUART has been initiated");
+
+	TimerInit();
 
 	//// printf the required GPL string. //////////////////////////////////////
 	printf("\n\n");
@@ -61,6 +62,7 @@ void c_main()
 
 	//MemCpy((char *)KERNEL_DRAM_BASE, (char *)KERNEL_SRAM_BASE, KERNEL_MAX_SIZE);	// kernel image reload
 
+	while (1) ;
 	EthInit();
         //sendtest();
 
