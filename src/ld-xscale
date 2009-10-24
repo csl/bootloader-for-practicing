@@ -4,7 +4,7 @@ OUTPUT_ARCH(arm)
 SECTIONS
 {
    . = ALIGN(4);
-   .text 0xA4000000 - 0x40000: 
+   .text 0xA4000000: 
    {
       _ld_text_start = .;
       *(.text)
