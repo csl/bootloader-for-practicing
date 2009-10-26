@@ -20,6 +20,7 @@
 
 uchar SendFrameBuf[100];
 uchar ReadFrameBuf[100];
+
 void wait(int sec)
 {
      long timeout;
@@ -211,7 +212,6 @@ bool EthInit()
         WriteReg(PHY_CNTR,0x2100);
         
         //set STRIP_CRC,DUPLEX,100M SPEED bit
-     
         BANK_SELECT=BANK0;
         IO_RCR = 0x0300;       //STRIP_CRC,RXEN.
         //Tx enable.enable SWFDUP mode.PAD_EN enable.
@@ -220,7 +220,7 @@ bool EthInit()
         
 	//EPH_POWER enable;add wait states on ardy.
         BANK_SELECT = BANK1;
-	IO_CR = 0x8000;        //EPH_POWER enabled
+        IO_CR = 0x8000;        //EPH_POWER enabled
 
         /*//check BASE address register value(default to 0x1801h)
         iobase = IO_BAR;
@@ -235,7 +235,7 @@ bool EthInit()
         MAC_ADDR5 = clientEther[5];
         ch = MAC_ADDR5;
 
-        printf("the mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
+        printf("\n\nthe mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
         
 	//Enable Autorelease,enbable transmit error interrupt bit into EPH interrupt status.
 	IO_CTR = 0x08E0;
@@ -266,6 +266,7 @@ bool EthInit()
 
          BANK_SELECT=BANK2;
          while((IO_MMUCR&0x0001));
+
          IO_MMUCR=0x0040;
          while((IO_MMUCR&0x0001));
 
@@ -277,6 +278,7 @@ bool EthInit()
          ReadReg(PHY_STATUS,&phyid2);
          if(phyid2&0x0004)
              printf("link successfully\n");*/
+
 	return true;
 }	// EthInit.
 

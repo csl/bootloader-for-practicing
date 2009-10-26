@@ -100,7 +100,8 @@ bool DoMemCmp(CMD_TBL *cptr, int argc, char **argv){
 }	// DoMemCmp.
 
 
-bool DoMemSet(CMD_TBL *cptr, int argc, char **argv){
+bool DoMemSet(CMD_TBL *cptr, int argc, char **argv)
+{
 	char	*addr;
 	char	c;
 	int		len;
@@ -161,7 +162,8 @@ bool DoReadFromReg(CMD_TBL *cptr, int argc, char **argv){
 }	// DoReadFromReg.
 
 
-bool DoWriteToReg(CMD_TBL *cptr, int argc, char **argv){
+bool DoWriteToReg(CMD_TBL *cptr, int argc, char **argv)
+{
 	char *addr=0;
 	char c;
 	short s;

@@ -35,11 +35,11 @@ bool	DoPrintfHelp		(int argc, char **argv);
 
 void c_main()
 {
-	int		i;
+	int	i;
 	bool	autoboot=true;
 	char	cmd[128];
 	long	timeout;
-	int		argc=0;
+	int	argc=0;
 	char	*argv[MAX_ARGS];
 	CMD_TBL	*cptr;
 	 
@@ -55,10 +55,10 @@ void c_main()
 	TimerInit();
 
 	//// printf the required GPL string. //////////////////////////////////////
-	printf("\n\n");
-	printf(" "PACKAGE "-" VERSION "\n Copyright 2005 Embedded Group at 211.1010@UESTC\n");
-	printf(" Support:211.1010@UESTC\n");
-	printf("\n");
+	//printf("\n\n");
+	//printf(" "PACKAGE "-" VERSION "\n Copyright 2005 Embedded Group at 211.1010@UESTC\n");
+	//printf(" Support:211.1010@UESTC\n");
+	//printf("\n");
 
 	//MemCpy((char *)KERNEL_DRAM_BASE, (char *)KERNEL_SRAM_BASE, KERNEL_MAX_SIZE);	// kernel image reload
 
@@ -69,8 +69,7 @@ void c_main()
 	printf("Autoboot in progress, press any key to stop ");
 
 	for (i=0; i<3; i++){
-		timeout = GetTime()+1;	// 1ÃÊ°£ Delay
-
+		timeout = GetTime()+1;
 		printf(".");
 		while (GetTime()<timeout){
 			if ((FFLSR & 0x00000001)){	// Serial
@@ -79,7 +78,7 @@ void c_main()
 				break;
 			}
 		}
-		if (autoboot==false) break;
+		if ( autoboot == false) break;
 	}
 
 
@@ -104,25 +103,34 @@ void c_main()
 
 		// wait an hour to get a command.
 		GetCommand(cmd, 128, 3600);
+
 		if (!cmd || !cmd[0]) continue;
 		
 		argc = GetArgs(cmd, argv);
-		for (cptr=cmdTbl; cptr->cmd; cptr++){
-			if (!StrCmp(argv[0], cptr->cmd)){
+
+		for (cptr=cmdTbl; cptr->cmd; cptr++)
+		{
+			if (!StrCmp(argv[0], cptr->cmd))
+			{
 				(cptr->run)(cptr, argc, argv);
 				break;
 			}
 		}
-		if (!StrCmp(argv[0], "help") || !StrCmp(argv[0], "?")){
+
+		if (!StrCmp(argv[0], "help") || !StrCmp(argv[0], "?"))
+		{
 			DoPrintfHelp(argc, argv);
-		} else if (!(cptr->cmd)){
+		} 
+		else if (!(cptr->cmd))
+		{
 			printf("\tUnknown command : %s\n", argv[0]);
 		}
 	}
 } // CMain.
 
 
-bool DoPrintfHelp(int argc, char **argv){
+bool DoPrintfHelp(int argc, char **argv)
+{
 	CMD_TBL	*cptr;
 
 	if (argc==1){

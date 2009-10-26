@@ -20,8 +20,7 @@
 #include "bootp.h"
 #include "scc.h"
 
-#define TIMEOUT							20		// bootp request를 시도하는 시간(초당 1회 시도).
-
+#define TIMEOUT							20		// bootp request
 #define PORT_BOOTPS						67		// BOOTP server UDP port.
 #define PORT_BOOTPC						68		// BOOTP client UDP port.
 
@@ -63,15 +62,17 @@ void  sendtest()
    
 }
 
-bool DoBootp(CMD_TBL *cptr, int argc, char **argv){
+bool DoBootp(CMD_TBL *cptr, int argc, char **argv)
+{
 	return BootpTx();
 }
 
 
-bool BootpTx(void){
+bool BootpTx(void)
+{
 	int			i;
 	char		*txPktBuf, *rxPktBuf;
-	long		delay;		// delay : 1초 delay후 실패면 재시도.
+	long		delay;		// delay :
 	
 	txPktBuf = PktBuf;
 	rxPktBuf = PktBuf;

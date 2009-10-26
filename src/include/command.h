@@ -24,21 +24,23 @@
 #define MAX_ARGS				20
 
 
-struct _CMD_TBL {
-	char 	*cmd;		// 이 함수를 호출할 명령어.
-	bool	(*run)(struct _CMD_TBL *cptr, int argc, char **argv);	// function point.
-	char	*usage;		// command가 잘 못되었을 때 나올 message.
-	char	*help;		// help에서 보여줄 message.
+struct _CMD_TBL 
+{
+	char 	*cmd;
+	bool	(*run)(struct _CMD_TBL *cptr, int argc, char **argv);	// function point
+	char	*usage;		// command message
+	char	*help;		// help message.
 	char	*helpMore;
 };
+
 typedef struct _CMD_TBL			CMD_TBL;
 
 extern CMD_TBL cmdTbl[];
 
 // Prototypes.
 void	DisplayPrompt(char *prompt);
-int		GetCommand(char *command, int len, int timeout);
-int		GetArgs(char *s, char **args);
+int	GetCommand(char *command, int len, int timeout);
+int	GetArgs(char *s, char **args);
 bool	DoBootKernel(CMD_TBL *cptr, int argc, char **argv);
 bool	DoReload(CMD_TBL *cptr, int argc, char **argv);
 void	ClearLine(void);
