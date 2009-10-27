@@ -18,7 +18,8 @@
 
 #include "util.h"
 
-bool DoMemCpy(CMD_TBL *cptr, int argc, char **argv){
+bool DoMemCpy(CMD_TBL *cptr, int argc, char **argv)
+{
 	ulong	dest, src, len;
 
 	if (argc < 4){
@@ -36,7 +37,8 @@ bool DoMemCpy(CMD_TBL *cptr, int argc, char **argv){
 }	// DoMemCpy.
 
 
-bool DoMemDump(CMD_TBL *cptr, int argc, char **argv){
+bool DoMemDump(CMD_TBL *cptr, int argc, char **argv)
+{
 	ulong	i, addr, len, endptr;
 	char	value;
 
@@ -64,7 +66,8 @@ bool DoMemDump(CMD_TBL *cptr, int argc, char **argv){
 }	// DoMemDump.
 
 
-bool DoHexDump(CMD_TBL *cptr, int argc, char **argv){
+bool DoHexDump(CMD_TBL *cptr, int argc, char **argv)
+{
 	long addr, len;
 	
 	if (argc < 3){
@@ -80,7 +83,8 @@ bool DoHexDump(CMD_TBL *cptr, int argc, char **argv){
 }	// DoHexDump.
 
 
-bool DoMemCmp(CMD_TBL *cptr, int argc, char **argv){
+bool DoMemCmp(CMD_TBL *cptr, int argc, char **argv)
+{
 	ulong addr1, addr2;
 	int len;
 	if (argc < 4){
@@ -121,7 +125,8 @@ bool DoMemSet(CMD_TBL *cptr, int argc, char **argv)
 }	// DoMemSet.
 
 
-bool DoReadFromReg(CMD_TBL *cptr, int argc, char **argv){
+bool DoReadFromReg(CMD_TBL *cptr, int argc, char **argv)
+{
 	void	*addr=0;
 	char	c;
 	short	s;

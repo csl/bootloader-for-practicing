@@ -25,7 +25,8 @@ static void PrintString(char *fmt, char *cptr);
 static int Power(int num, int cnt);
 
 
-void MemCpy32(void *dest, void *src, int numWords){
+void MemCpy32(void *dest, void *src, int numWords)
+{
 	volatile long *s1=dest, *s2=src;
 	while(numWords--) {
 		*s1++ = *s2++;
@@ -34,7 +35,8 @@ void MemCpy32(void *dest, void *src, int numWords){
 }	// MemCpy32.
 
 
-void MemCpy(void *dest, void *src, int cnt){
+void MemCpy(void *dest, void *src, int cnt)
+{
 	char *s1=dest, *s2=src, *endptr=(char *)dest+cnt;
 	
 	while (s1<endptr)
@@ -43,7 +45,8 @@ void MemCpy(void *dest, void *src, int cnt){
 }	// MemCpy.
 
 
-void MemSet(void *dest, char c, int len){
+void MemSet(void *dest, char c, int len)
+{
 	char *s=dest;
 	char *limit = (char *)dest+len;
 
@@ -51,7 +54,8 @@ void MemSet(void *dest, char c, int len){
 }	// MemSet.
 
 
-int MemCmp(void *addr1, void *addr2, int len){
+int MemCmp(void *addr1, void *addr2, int len)
+{
 	volatile char *s1=addr1, *s2=addr2;
 	volatile char *endptr = addr1+len;
 
@@ -62,7 +66,8 @@ int MemCmp(void *addr1, void *addr2, int len){
 }	// MemCmp.
 
 
-void StrCpy(char *dest, char *src){
+void StrCpy(char *dest, char *src)
+{
 	volatile char *s1=dest, *s2=src;
 	
 	while (*s2!=0) *s1++ = *s2++;
@@ -71,7 +76,8 @@ void StrCpy(char *dest, char *src){
 }	// StrCpy.
 
 
-int StrLen(char *dest){
+int StrLen(char *dest)
+{
 	volatile char *tmp = dest;
 
 	if (!tmp) return -1;
@@ -80,7 +86,8 @@ int StrLen(char *dest){
 }	// StrLen.
 
 
-int StrNCmp(char *s1, char *s2, int len){
+int StrNCmp(char *s1, char *s2, int len)
+{
 	int i;
 
 	for(i = 0; i < len; i++){
@@ -91,7 +98,8 @@ int StrNCmp(char *s1, char *s2, int len){
 } // StrNCmp.
 
 
-int StrCmp(char *s1, char *s2){
+int StrCmp(char *s1, char *s2)
+{
 	for (; *s1 && *s2; s1++, s2++){
 		if (*s1 != *s2) return ((int)(*s1) - (int)(*s2));
 	}
@@ -100,7 +108,8 @@ int StrCmp(char *s1, char *s2){
 }	// StrCmp.
 
 
-bool HexToInt(char *s, void *retval, VAR_TYPE type){
+bool HexToInt(char *s, void *retval, VAR_TYPE type)
+{
 	char	c;
 	int		i;
 	long	rval;
@@ -140,7 +149,8 @@ bool HexToInt(char *s, void *retval, VAR_TYPE type){
 }	// HexToInt.
 
 
-bool DecToLong(char *s, long *retval){
+bool DecToLong(char *s, long *retval)
+{
 	long remainder;
 	if (!s || !s[0]) return false;
 
@@ -154,7 +164,8 @@ bool DecToLong(char *s, long *retval){
 }	// DecToLong.
 
 
-void HexDump(char *addr, int len){
+void HexDump(char *addr, int len)
+{
 	char	*s=addr, *endPtr=(char *)((long)addr+len);
 	int		i, remainder=len%16;
 	
@@ -163,9 +174,9 @@ void HexDump(char *addr, int len){
 	
 	// print out 16 byte blocks.
 	while (s+16<=endPtr){
-		// offset 출력.
+		// offset
 		printf("0x%08lx  ", (long)(s-addr));
-		// 16 bytes 단위로 내용 출력.
+		// 16 bytes
 		for (i=0; i<16; i++){
 			printf("%02x ", s[i]);
 		}
@@ -180,9 +191,9 @@ void HexDump(char *addr, int len){
 	
 	// Print out remainder.
 	if (remainder){
-		// offset 출력.
+		// offset
 		printf("0x%08lx  ", (long)(s-addr));
-		// 16 bytes 단위로 출력하고 남은 것 출력.
+		// 16 bytes
 		for (i=0; i<remainder; i++){
 			printf("%02x ", s[i]);
 		}
@@ -203,17 +214,18 @@ void HexDump(char *addr, int len){
 }	// HexDump.
 
 
-void printf(char *fmt, ...){
+void printf(char *fmt, ...)
+{
 	int		i;
 	va_list args;
 	char	*s=fmt;
-	char	format[10];		// fmt의 인자가 "%08lx"라면, "08l"를 임시로 기록.
+	char	format[10];
 	
 	va_start(args, fmt);
 	while (*s){
 		if (*s=='%'){
 			s++;
-			// s에서 "%08lx"형식을 가져와 format에 기록. 나중에 출력함수에 넘겨줌.
+			
 			format[0] = '%';
 			for (i=1; i<10;){
 				if (*s=='c' || *s=='d' || *s=='x' || *s=='s' || *s=='%'){
@@ -225,7 +237,7 @@ void printf(char *fmt, ...){
 					format[i++] = *s++;
 				}
 			}
-			// "%s", "%c", "%d", "%x"를 찾아 출력할 함수 호출.
+			// "%s", "%c", "%d", "%x"
 			switch (*s++){
 				case 'c' :
 					PrintChar(format, va_arg(args, int));
@@ -260,15 +272,16 @@ void PrintChar(char *fmt, char c){
 }
 
 
-void PrintDec(char *fmt, int l){
+void PrintDec(char *fmt, int l)
+{
 	int		i, j;
 	char	c, *s=fmt, tol[10];
-	bool	flag0=false, flagl=false;	// "%08lx"에서 '0', 'l'의 존재 여부.
-	long	flagcnt=0;					// "%08lx"에서 "8"을 찾아서 long형으로.
-	bool	leading_zero=true;			// long형의 data를 출력하기 위한 변수.
+	bool	flag0=false, flagl=false;	// "%08lx"
+	long	flagcnt=0;					// "%08lx"
+	bool	leading_zero=true;			// long
 	long	divisor, result, remainder;
 
-	// fmt의 "%08lx"에서 '0', '8', 'l'을 해석.
+	// fmt
 	for (i=0; (c=s[i]); i++){
 		if (c=='d') break;
 		else if (c>='1' && c<='9'){
@@ -284,10 +297,10 @@ void PrintDec(char *fmt, int l){
 		else continue;
 	}
 
-	// 위의 flag에 따라 출력.
+	
 	if (flagcnt){
 		if (flagcnt>9) flagcnt=9;
-		remainder = l%(Power(10, flagcnt));	// flagcnt보다 윗자리의 수는 걸러냄. 199에 flagcnt==2이면, 99만.
+		remainder = l%(Power(10, flagcnt));	// flagcnt flagcnt
 
 		for (divisor=Power(10, flagcnt-1); divisor>0; divisor/=10){
 			result = remainder/divisor;
@@ -316,16 +329,17 @@ void PrintDec(char *fmt, int l){
 }
 
 
-void PrintHex(char *fmt, int l){
+void PrintHex(char *fmt, int l)
+{
 	int		i, j;
 	char	c, *s=fmt, tol[10];
 	bool	flag0=false, flagl=false;	// flags.
 	long	flagcnt=0;
 	bool	leading_zero=true;
 	char	uHex, lHex;
-	int		cnt;						// "%5x"의 경우 5개만 출력하도록 출력한 개수.
+	int		cnt;
 
-	// fmt의 "%08lx"에서 '0', '8', 'l'을 해석.
+	// fmt
 	for (i=0; (c=s[i]); i++){
 		if (c=='x') break;
 		else if (c>='1' && c<='9'){
@@ -342,20 +356,20 @@ void PrintHex(char *fmt, int l){
 	}
 
 	s = (char *)(&l);
-	l = SWAP32(l);		// little, big endian에 따라서.(big이 출력하기 쉬워 순서를 바꿈)
+	l = SWAP32(l);		// little, big endian
 	
-	// 위의 flag에 따라 출력.
+	
 	if (flagcnt){
-		if (flagcnt&0x01){	// flagcnt가 홀수 일때, upper를 무시, lower만 출력.
-			c = s[(8-(flagcnt+1))/2]; // 홀수 일때 그 위치를 포함하는 곳의 값을 가져 옵니다.
+		if (flagcnt&0x01){	// flagcnt
+			c = s[(8-(flagcnt+1))/2]; 
 			
-			// lower 4 bits를 가져와서 ascii code로.
+			// lower 4 bitsa scii code
 			lHex = ((c>>0)&0x0f);
 			if (lHex!=0) leading_zero=false;
 			if (lHex<10) lHex+='0';
 			else         lHex+='A'-10;
 
-			// lower 4 bits 출력.
+			// lower 4 bits
 			if (leading_zero){
 				if (flag0) SerialOutputByte('0');
 				else       SerialOutputByte(' ');
@@ -365,7 +379,7 @@ void PrintHex(char *fmt, int l){
 			flagcnt--;
 		}
 
-		// byte단위의 data를 Hex로 출력.
+		// byte data Hex
 		for (cnt=0, i=(8-flagcnt)/2; i<4; i++){
 			c = s[i];
 				
@@ -379,19 +393,19 @@ void PrintHex(char *fmt, int l){
 			if (uHex<10) uHex+='0';
 			else         uHex+='A'-10;
 
-			// upper 4 bits 출력.
+			// upper 4 bits
 			if (leading_zero){
 				if (flag0) SerialOutputByte('0');
 				else       SerialOutputByte(' ');
 			}
 			else SerialOutputByte(uHex);
 			
-			// lower 4 bits를 ascii code로.
+			// lower 4 bits ascii code로.
 			if (lHex!=0) leading_zero = false;
 			if (lHex<10) lHex+='0';
 			else         lHex+='A'-10;
 
-			// lower 4 bits 출력.
+			// lower 4 bits
 			if (leading_zero){
 				if (flag0) SerialOutputByte('0');
 				else       SerialOutputByte(' ');
@@ -423,14 +437,16 @@ void PrintHex(char *fmt, int l){
 }
 
 
-void PrintString(char *fmt, char *s){
+void PrintString(char *fmt, char *s)
+{
 	if (!fmt || !s) return;
 	while (*s) SerialOutputByte(*s++);
 	return;
 }
 
 
-int Power(int num, int cnt){
+int Power(int num, int cnt)
+{
 	long retval=num;
 	cnt--;
 

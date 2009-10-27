@@ -20,7 +20,8 @@
 #include "bootp.h"
 #include "scc.h"
 
-#define TIMEOUT							20		// bootp request
+#define TIMEOUT							20		// bootp request.
+
 #define PORT_BOOTPS						67		// BOOTP server UDP port.
 #define PORT_BOOTPC						68		// BOOTP client UDP port.
 
@@ -54,6 +55,7 @@ void  sendtest()
      SetUdpHeader((char *)(txPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE),bootps,bootpc,BOOTP_HDR_SIZE);
      SetIPHeader((char *)(txPktBuf+ETHER_HDR_SIZE),noIP,broadcastIP,UDP_HDR_SIZE+BOOTP_HDR_SIZE);
      SetEtherHeader(txPktBuf,broadcastEther,PROT_IP);
+
      for(i=0;i<10000;i++){
         EthTx(testpkt,ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE+BOOTP_HDR_SIZE);
         EthRx(rxPktBuf);
@@ -72,7 +74,7 @@ bool BootpTx(void)
 {
 	int			i;
 	char		*txPktBuf, *rxPktBuf;
-	long		delay;		// delay :
+	long		delay;		// delay : 1.
 	
 	txPktBuf = PktBuf;
 	rxPktBuf = PktBuf;
@@ -80,8 +82,9 @@ bool BootpTx(void)
 	bootpState = BOOTP_CONTINUE;
 	protocol = PROT_BOOTP;
 
-	// make boop packet.
+	// Make Boop Packet.
 	MemSet(txPktBuf, 0, MAX_PKT_SIZE);
+	//Header
 	SetBootpHeader((char *)(txPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE));
 	SetUdpHeader((char *)(txPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE), bootps, bootpc, BOOTP_HDR_SIZE);
 	SetIPHeader((char *)(txPktBuf+ETHER_HDR_SIZE), noIP, broadcastIP, UDP_HDR_SIZE+BOOTP_HDR_SIZE);
@@ -96,7 +99,8 @@ bool BootpTx(void)
 	printf("\tSending bootp packet...\n");
 	
 	// bootp operation.
-	for (i=0; i<TIMEOUT; i++){
+	for (i=0; i<TIMEOUT; i++)
+	{
 		// transmit bootp packet to host.
 		printf(".");
 		if (!TxPacket(txPktBuf, ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE+BOOTP_HDR_SIZE)) break;
@@ -112,7 +116,7 @@ bool BootpTx(void)
 
 	protocol = NOPROTOCOL;
 	
-	if (bootpState==BOOTP_SUCCESS){
+	if (bootpState == BOOTP_SUCCESS){
 		printf("Bootp Packet received.\n");
 		
 		printf("\tHost   (server) Ethernet : ");
@@ -142,7 +146,8 @@ bool BootpTx(void)
 }	// BootpTx.
 
 
-bool BootpRx(char *bootpHeader, short len){
+bool BootpRx(char *bootpHeader, short len)
+{
 	BOOTP_HEADER	*bhp = (BOOTP_HEADER *)bootpHeader;
 
 	if (len!=BOOTP_HDR_SIZE)		return false;
@@ -163,13 +168,14 @@ bool BootpRx(char *bootpHeader, short len){
 }	// BootpRx.
 
 
-void SetBootpHeader(char *bootpHeader){
+void SetBootpHeader(char *bootpHeader)
+{
 	BOOTP_HEADER	*bhp = (BOOTP_HEADER *)bootpHeader;
 
 	bhp->bh_opcode = OP_BOOTREQUEST;			// 1 : request		2 : reply.
 	bhp->bh_htype  = HWT_ETHER;					// 10 Base Ethernet : 1.
 	bhp->bh_hlen   = HWL_ETHER;					// 10 Base Ethernet : 6.
-	bhp->bh_hops   = 0;							// client에서 0으로 setting. gateway가 사용.
+	bhp->bh_hops   = 0;							// client setting. gateway.
 	bhp->bh_secs   = SWAP16(GetTime() / HZ);	// 
 
 	MemSet(&(bhp->bh_ciaddr), 0, 4);

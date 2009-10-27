@@ -108,47 +108,38 @@ void DisplayPrompt(char *prompt)
 
 int GetCommand(char *cmd, int len, int timeout)
 {
-	char		c;
-	int		i, rdCnt, rdMax = len-1;
+	char			c;
+	int				i, rdCnt, rdMax = len-1;
 	volatile long	endTime=GetTime()+timeout*HZ;
 	
 	for (rdCnt=0, i=0; rdCnt < rdMax;){
 		// try to get a byte from the serial port.
-		while (!SerialInputByte(&c))
-		{
-			if (GetTime() > endTime)
-			{
+		while (!SerialInputByte(&c)){
+			if (GetTime() > endTime){
 				cmd[i++] = '\0';
 				return rdCnt;
 			}
 		}
 
-		if ((c=='\r') || (c=='\n'))
-		{
+		if ((c=='\r') || (c=='\n')){
 			cmd[i++] = '\0';
 			// print newline.
 			printf("\n");
 			return rdCnt;
-		} 
-		else if (c == '\b')
-		{
-			if(i > 0)
-			{
+		} else if (c == '\b'){
+			if(i > 0){
 				i--;
 				rdCnt--;
 				// cursor one position back.
 				printf("\b \b");
 			}
-		} 
-		else 
-		{
+		} else {
 			cmd[i++] = c;
 			rdCnt++;
 			// print character.
 			printf("%c", c);
 		}
 	}
-
 	return(rdCnt);
 }	// GetCommand.
 
@@ -158,8 +149,7 @@ int GetArgs(char *s, char **argv)
 	int args = 0;
 
 	if (!s || *s=='\0') return 0;
-	while (args < MAX_ARGS)
-	{
+	while (args < MAX_ARGS){
 		// skip space and tab.
 		while ((*s==' ') || (*s=='\t')) s++;
 
@@ -171,6 +161,7 @@ int GetArgs(char *s, char **argv)
 
 		// start get arg.
 		argv[args++] = s;
+
 
 		// remove ' ' and '\t'.
 		while (*s && (*s!=' ') && (*s!='\t')) s++;
@@ -190,12 +181,14 @@ bool DoBootKernel(CMD_TBL *cptr, int argc, char **argv)
 	long opt[2];
 	void (*theKernel)(int zero, int arch);
 
-	if (argc!=1 && argc!=3 && argc!=4){
+	if (argc!=1 && argc!=3 && argc!=4)
+	{
 		printf(cptr->usage);
 		return false;
 	}
 
-	switch (argc){
+	switch (argc)
+	{
 		// boot
 		case 1 :
 			opt[0] = 0;
@@ -222,10 +215,10 @@ bool DoResetTerminal(CMD_TBL *cptr, int argc, char **argv)
 {
 	int i;
 
-	printf("          c");
+	printf("ClearTerminal");
 	for(i=0; i<200; i++) printf("\n");
 
-	printf("c");
+	printf("ResetTerminal");
 	return true;
 }
 
@@ -239,12 +232,14 @@ bool DoReboot(CMD_TBL *cptr, int argc, char **argv)
 
 	return true;
 }
+
 bool DoReload(CMD_TBL *cptr, int argc, char **argv)
 {
 	ulong *src=0, *dest=0;
 	int len;
 
-	if (!StrCmp(argv[1], "kernel")){
+	if (!StrCmp(argv[1], "kernel"))
+	{
 		src  = (ulong *)KERNEL_SRAM_BASE;
 		dest = (ulong *)KERNEL_DRAM_BASE;
 		len  = KERNEL_MAX_SIZE;

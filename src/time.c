@@ -33,14 +33,16 @@
 
 #include "time.h"
 
-void TimerInit(void){
+void TimerInit(void)
+{
 	
 	return;
 }	// TimerInit.
 
 
 // return 32 KHz time clock.
-ulong GetTime(void){
+ulong GetTime(void)
+{
 	return RCNR;
 }	// GetTime.
 

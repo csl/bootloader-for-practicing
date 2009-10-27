@@ -19,7 +19,7 @@
 #include "tftp.h"
 #include "bootp.h"
 
-#define TFTP_PORT					69		// Well known TFTP port #
+#define TFTP_PORT					69	// Well known TFTP port #
 #define TFTP_TIMEOUT				5		// Seconds to tftpTimeout for a lost pkt
 #define TIMEOUT_COUNT				10		// # of tftpTimeouts before giving up
 
@@ -54,29 +54,33 @@ static ulong	tftpTimeout;
 bool			TftpStart(char *filename);
 void			TftpTx(char *txBuf);
 
-bool DoTftp(CMD_TBL *cptr, int argc, char **argv){
-	// tftp로 받은 file data를 기록할 주소를 생성.
+bool DoTftp(CMD_TBL *cptr, int argc, char **argv)
+{
 	if (argc!=3){
 		printf(cptr->usage);
 		return false;
 	}
-	if (!StrCmp(argv[2], "kernel")){
+	if (!StrCmp(argv[2], "kernel"))
+	{
 		loadAddr = (long)KERNEL_DRAM_BASE;
 	}
-	else if (!StrCmp(argv[2], "root")){
+	else if (!StrCmp(argv[2], "root"))
+	{
 		loadAddr = (long)ROOT_DRAM_BASE;
 	}
-	else if (!StrCmp(argv[2], "loader")){
+	else if (!StrCmp(argv[2], "loader"))
+	{
 		loadAddr = (long)LOADER_DRAM_BASE;
 	}
 	else {
-		if (!HexToInt(argv[2], &loadAddr, 32)){
+		if (!HexToInt(argv[2], &loadAddr, 32))
+		{
 			printf(cptr->usage);
 			return false;
 		}
 	}
 
-	// IP가 없으면 bootp를 실행하여 IP를 할당 받음.
+	// IP
 	if (clientIP==0){
 		printf("No IP. Bootp start...\n");
 		if (DoBootp(0, 0,0)==false){
@@ -88,7 +92,8 @@ bool DoTftp(CMD_TBL *cptr, int argc, char **argv){
 }	// DoTftp.
 
 
-bool TftpStart(char *filename){
+bool TftpStart(char *filename)
+{
 	char		*txPktBuf, *rxPktBuf;
 
 	txPktBuf = PktBuf;
@@ -124,9 +129,11 @@ bool TftpStart(char *filename){
 
 	tftpTimeout = GetTime() + TFTP_TIMEOUT * HZ;
 	
-	while (tftpState!=TFTP_STATE_SUCCESS && tftpState!=TFTP_STATE_FAILURE){
+	while (tftpState != TFTP_STATE_SUCCESS && tftpState != TFTP_STATE_FAILURE)
+	{
 		RxPacket(rxPktBuf);
-		if (GetTime()>tftpTimeout){
+		if (GetTime()>tftpTimeout)
+		{
 			printf("\n\tTftp is failed. Try again.\n\n");
 			tftpState=TFTP_STATE_FAILURE;
 		}
@@ -140,15 +147,17 @@ bool TftpStart(char *filename){
 }	// TftpStart.
 
 
-void TftpTx(char *txPktBuf){
+void TftpTx(char *txPktBuf)
+{
 	char		*pktPtr = (char *)(txPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE);
 	ushort		hostPort = 0;
 	int			len = 0;
 
 	MemSet(txPktBuf, 0, MAX_PKT_SIZE);
 	// make tftp header.
-	switch (tftpState){
-		// tftp request packet을 만듬.
+	switch (tftpState)
+	{
+		// tftp request packet
 		case TFTP_STATE_RRQ:
 			*((ushort *)pktPtr)++ = SWAP16(TFTP_RRQ);
 			StrCpy((char *)pktPtr, requestFile);
@@ -159,7 +168,7 @@ void TftpTx(char *txPktBuf){
 			hostPort = tftpPort;
 			break;
 
-		// 수신한 data packet에 대한 acknowledge packet을 만듬.
+		// data packet acknowledge
 		case TFTP_STATE_DATA:
 			*((ushort *)pktPtr)++ = SWAP16(TFTP_ACK);
 			*((ushort *)pktPtr)++ = SWAP16(tftpBlock);
@@ -167,7 +176,7 @@ void TftpTx(char *txPktBuf){
 			hostPort = tftpHostPort;
 			break;
 
-		// error packet을 만듬.
+		// error packet
 		case TFTP_STATE_TOO_LARGE:
 			*((ushort *)pktPtr)++ = SWAP16(TFTP_ERROR);
 			*((ushort *)pktPtr)++ = SWAP16(3);
@@ -178,7 +187,7 @@ void TftpTx(char *txPktBuf){
 
 			break;
 
-		// error packet을 만듬.
+		// error packet
 		case TFTP_STATE_BAD_MAGIC:
 			*((ushort *)pktPtr)++ = SWAP16(TFTP_ERROR);
 			*((ushort *)pktPtr)++ = SWAP16(2);
@@ -190,21 +199,23 @@ void TftpTx(char *txPktBuf){
 		default :
 			return;
 	}
-	// Ethernet, IP, UDP Header를 만듬.
+
+	// Ethernet, IP, UDP Header
 	SetUdpHeader((char *)(txPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE), hostPort, tftpClientPort, len);
 	SetIPHeader((char *)(txPktBuf+ETHER_HDR_SIZE), clientIP, hostIP, UDP_HDR_SIZE+len);
 	SetEtherHeader(txPktBuf, hostEther, PROT_IP);
 
-	// tftp packet 전송.
+	// tftp packet
 	TxPacket(txPktBuf, ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE+len);
 	return;
 }	// TftpTx.
 
 
-bool TftpRx(char *rxPktBuf, int len){
+bool TftpRx(char *rxPktBuf, int len)
+{
 	char			*pktPtr = rxPktBuf;
 	short			value;
-	unsigned long		rlen=0;			// tftp로 전송받은 data의 길이(임시 buffer).
+	unsigned long		rlen=0;			// tftp� (buffer).
 	
 	// handling received data.
 	value = SWAP16(*(short *)pktPtr);	// packet type.
@@ -220,17 +231,17 @@ bool TftpRx(char *rxPktBuf, int len){
 		case TFTP_DATA :
 			// error. check data index.
 			if (len < 2) return false;
-			tftpBlock = SWAP16(*(ushort *)pktPtr);	// tftp data packet에서 block 번호.
+			tftpBlock = SWAP16(*(ushort *)pktPtr);	// tftp data packet
 			pktPtr += 2;
 			len -= 2;
-			// tftp receive 진행 표시.
-			if (((tftpBlock)%128)==0){	// each 64 kbyte.
+			// tftp receive.
+			if (( (tftpBlock)%128) == 0 ){	// each 64 kbyte.
 				ClearLine();
 				rlen = (unsigned long)tftpBlock * 512;
 				printf("\t0x%08lx bytes received.", rlen);
 			}
 
-			// request에 대한 첫번째 data packet일때 필요한 정보 설정.
+			// request
 			if (tftpState == TFTP_STATE_RRQ){
 				tftpState = TFTP_STATE_DATA;
 				tftpLastBlock = 0;
@@ -240,7 +251,7 @@ bool TftpRx(char *rxPktBuf, int len){
 					return false;
 				}
 			}
-			// 이전의 packet을 다시 받았을 때는 무시.
+			
 			if (tftpBlock <= tftpLastBlock) break;
 
 			tftpLastBlock = tftpBlock;
@@ -260,7 +271,7 @@ bool TftpRx(char *rxPktBuf, int len){
 				tftpState = TFTP_STATE_SUCCESS;
 			}
 			break;
-		// error 처리.
+		// error
 		case TFTP_ERROR :
 			// tftp RRQ or tftp ack pakcet has some error.
 			printf("\nTFTP error: '%s' (%d)\n", pktPtr+2, SWAP16(*(ushort *)pktPtr));

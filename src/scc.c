@@ -37,24 +37,31 @@ bool EthTx(void *txPktBuf, int len)
         char alloc;
         int i,k,cntWord;
         numPages=(len&(~1)+5)>>8;
+
         // Allocate memory for TX
         BANK_SELECT = BANK2;
-        while((IO_MMUCR&0x0001));	
+
+        while((IO_MMUCR&0x0001));
+	
         IO_MMUCR = ALLOCMEM|numPages;
+
         for(k=0;k<5;k++);
+
         while(!(IO_ISR&0x08))
-           {
+        {
                IO_MMUCR=0x0040;
                for(k=0;k<10;k++);
                IO_MMUCR=ALLOCMEM|numPages;
                for(k=0;k<5;k++);
-           }
+         }
         //printf("allocate memmory sucessfully\n");
 
         // copy allocated packet number into packet number reg.
         alloc = IO_ARR;
+
         if((alloc&0x80))
            printf("fail to allocate memort\n");
+
         IO_PNR=alloc&0x3f;
         
         // load pointer register,aoutincrease from 0x00000000 address.
@@ -62,8 +69,12 @@ bool EthTx(void *txPktBuf, int len)
         IO_DATA = 0x0000;            //status word
         IO_DATA = len + 6;           //len word;
         cntWord = len>>1;
-        s=txPktBuf;
-	for (i=0;i<cntWord;i++){
+
+	//S pointer to txPktBuf
+        s = txPktBuf;
+
+	for (i=0;i<cntWord;i++)
+	{
 		IO_DATA = *((short *)s);
                 for(k=0;k<5;k++);
                 s=s+2;
@@ -74,12 +85,16 @@ bool EthTx(void *txPktBuf, int len)
          else
              IO_DATA=0x0000;
         // enqueue packet number into tx fifo to start transition.
+
         IO_MMUCR = ENQPACKET;
         
         // wait for transmit successfully
         //BANK_SELECT=BANK0;
+
         timeout=GetTime()+5;
-        while(!(IO_ISR&0x04)){
+
+        while(!(IO_ISR&0x04))
+	{
              if(GetTime()>timeout)
                  printf("transmit failure\n");
                break;
@@ -87,9 +102,13 @@ bool EthTx(void *txPktBuf, int len)
         IO_ISR=0x04;
         //printf("transmit successfully\n");
         printf(".");
+
         BANK_SELECT=BANK2;
+
         while((IO_MMUCR&0x0001));//wait for releasing completesy;
+
         for(k=0;k<5;k++);
+
         /*if(IO_ISR&0x04)   //transmit successfully,TXEMPTY is set;
            {
               printf("transmit successfully\n");
@@ -102,7 +121,6 @@ bool EthTx(void *txPktBuf, int len)
              IO_TCR = IO_TCR | 0x0001;  //reenable txen bit;
           }*/
              
-          
 	return true;
 }	// EthTx.
 
@@ -212,6 +230,7 @@ bool EthInit()
         WriteReg(PHY_CNTR,0x2100);
         
         //set STRIP_CRC,DUPLEX,100M SPEED bit
+     
         BANK_SELECT=BANK0;
         IO_RCR = 0x0300;       //STRIP_CRC,RXEN.
         //Tx enable.enable SWFDUP mode.PAD_EN enable.
@@ -220,7 +239,7 @@ bool EthInit()
         
 	//EPH_POWER enable;add wait states on ardy.
         BANK_SELECT = BANK1;
-        IO_CR = 0x8000;        //EPH_POWER enabled
+	IO_CR = 0x8000;        //EPH_POWER enabled
 
         /*//check BASE address register value(default to 0x1801h)
         iobase = IO_BAR;
@@ -235,7 +254,7 @@ bool EthInit()
         MAC_ADDR5 = clientEther[5];
         ch = MAC_ADDR5;
 
-        printf("\n\nthe mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
+        printf("the mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
         
 	//Enable Autorelease,enbable transmit error interrupt bit into EPH interrupt status.
 	IO_CTR = 0x08E0;
@@ -266,7 +285,6 @@ bool EthInit()
 
          BANK_SELECT=BANK2;
          while((IO_MMUCR&0x0001));
-
          IO_MMUCR=0x0040;
          while((IO_MMUCR&0x0001));
 
@@ -278,7 +296,6 @@ bool EthInit()
          ReadReg(PHY_STATUS,&phyid2);
          if(phyid2&0x0004)
              printf("link successfully\n");*/
-
 	return true;
 }	// EthInit.
 

@@ -23,11 +23,13 @@
 
 uchar	hostEther[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 ulong	hostIP=0;
+
 #ifdef	CLIENT_ETHER
 uchar	clientEther[6] = CLIENT_ETHER;
 #else
 uchar	clientEther[6];
 #endif
+
 ulong	clientIP=0;
 short	protocol=NOPROTOCOL;
 short	ipID;
@@ -35,22 +37,26 @@ short	ipID;
 uchar	PktBuf[MAX_PKT_SIZE];
 //uchar   SendPktBuf[MAX_PKT_SIZE];
 
-bool TxPacket(char *txPktBuf, int len){
+bool TxPacket(char *txPktBuf, int len)
+{
 	return EthTx(txPktBuf, len);
 }	// TxPacket.
 
 
-bool RxPacket(char *rxPktBuf){
+bool RxPacket(char *rxPktBuf)
+{
 	return EthRx(rxPktBuf);
 }
 
 
-bool NetInit(){
+bool NetInit()
+{
 	return EthInit();
 }
 
 
-void RxPacketHandle(char *rxPktBuf, long len){
+void RxPacketHandle(char *rxPktBuf, long len)
+{
 	ETH_HEADER		*et = (ETH_HEADER *)rxPktBuf;
 	IP_HEADER		*ip = (IP_HEADER *)(rxPktBuf+ETHER_HDR_SIZE);
 	UDP_HEADER		*udp = (UDP_HEADER *)(rxPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE);
@@ -103,25 +109,25 @@ void RxPacketHandle(char *rxPktBuf, long len){
 		case PROT_IP:
 			// error check.
 			// length check.
-			if (len < ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE) return;	// udp만 사용하므로 udp 포함하여 길이 check.
+			if (len < ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE) return;
 			if (len < ETHER_HDR_SIZE+SWAP16(ip->ip_len)) return;
-			// 현재 ip version은 4.
+			// IPV4
 			if ((ip->ip_hl_v & 0xf0) != 0x40) return;
 			// Can't deal fragments.
 			if (ip->ip_off & SWAP16(0x1fff)) return;
 			// check checksum.
 			if (!IPChksumOK((char *)ip, IP_HDR_SIZE / 2)) return;
-			// client의 ip와 받은 packet의 ip 비교.
+			// client packet.
 			if (clientIP && MemCmp(&ip->ip_dest, &clientIP, 4)) return;
-			// udp인지 check. 17은 udp의 번호.
+			// udp check.
 			if (ip->ip_p!=17) return;
 
-			// packet을 처리할 수 있는 함수를 호출.
+			// packet
 			switch (protocol){
 				case PROT_BOOTP :
 					// check udp.
 					if (udp->udp_src!=SWAP16(bootps) || udp->udp_dest!=SWAP16(bootpc)) break;
-					// bootp 처리 함수 호출. 올바른 Bootp Reply이면, Host의 Ethernet 주소를 기록함.
+					// bootp
 					if (BootpRx((char *)(rxPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE),
 							SWAP16(udp->udp_len)-UDP_HDR_SIZE)==true){
 						MemCpy(hostEther, (char *)et->et_src,6);
@@ -132,7 +138,7 @@ void RxPacketHandle(char *rxPktBuf, long len){
 					if (udp->udp_src!=SWAP16(tftpPort) && (tftpHostPort!=0 && udp->udp_src!=SWAP16(tftpHostPort))) break;
 					if (udp->udp_dest!=SWAP16(tftpPort) && udp->udp_dest!=SWAP16(tftpClientPort)) break;
 					if (tftpHostPort==0) tftpHostPort=SWAP16(udp->udp_src);
-					// tftp 처리 함수 호출.
+					// tftp
 					TftpRx((char *)(rxPktBuf+ETHER_HDR_SIZE+IP_HDR_SIZE+UDP_HDR_SIZE),
 							SWAP16(udp->udp_len)-UDP_HDR_SIZE);
 					break;
@@ -145,12 +151,14 @@ void RxPacketHandle(char *rxPktBuf, long len){
 }	// RxPacketHandle.
 
 
-int IPChksumOK(char *ptr, int len){
+int IPChksumOK(char *ptr, int len)
+{
 	return !((IPChksum(ptr, len) + 1) & 0xfffe);
 }	// IPCksumOk.
 
 
-unsigned IPChksum(char *ptr, int len){
+unsigned IPChksum(char *ptr, int len)
+{
 	ulong		xsum;
 
 	xsum = 0;
@@ -162,7 +170,8 @@ unsigned IPChksum(char *ptr, int len){
 }	// IPChksum.
 
 
-void SetEtherHeader(char *ethHeader, char *hEth, ushort prot){
+void SetEtherHeader(char *ethHeader, char *hEth, ushort prot)
+{
 	volatile ETH_HEADER		*et = (ETH_HEADER *)ethHeader;
 	
 	MemCpy((char *)et->et_dest, hEth, 6);
@@ -172,7 +181,8 @@ void SetEtherHeader(char *ethHeader, char *hEth, ushort prot){
 }	// SetEtherHeader.
 
 
-void SetIPHeader(char *ipHeader, ulong clientIP, ulong hostIP, ushort len){
+void SetIPHeader(char *ipHeader, ulong clientIP, ulong hostIP, ushort len)
+{
 	volatile IP_HEADER	*ip = (volatile IP_HEADER *)ipHeader;
 
 	// If the data is an odd number of bytes, zero the
@@ -196,7 +206,8 @@ void SetIPHeader(char *ipHeader, ulong clientIP, ulong hostIP, ushort len){
 }	// SetIPHeader.
 
 
-void SetUdpHeader(char *udpHeader, ushort hPort, ushort cPort, ushort len){
+void SetUdpHeader(char *udpHeader, ushort hPort, ushort cPort, ushort len)
+{
 	volatile UDP_HEADER		*udp = (UDP_HEADER *)udpHeader;
 
 	udp->udp_dest    = SWAP16(hPort);
@@ -207,7 +218,8 @@ void SetUdpHeader(char *udpHeader, ushort hPort, ushort cPort, ushort len){
 }	// SetUdpHeader.
 
 
-void PrintIPAddr(long ip){
+void PrintIPAddr(long ip)
+{
 	ip = SWAP32(ip);
 	printf("%d.%d.%d.%d", (char)((ip>>24)&0xff), (char)((ip>>16)&0xff),
 					(char)((ip>>8)&0xff), (char)((ip>>0)&0xff));
@@ -215,7 +227,8 @@ void PrintIPAddr(long ip){
 }	// NetPrintIPaddr.
 
 
-void PrintEthAddr(char *ethAddr){
+void PrintEthAddr(char *ethAddr)
+{
 	int		i;
 
 	for (i=0; i<6; i++){
