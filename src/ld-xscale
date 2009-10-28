@@ -36,5 +36,5 @@ SECTIONS
    }
    _ld_bss_size = SIZEOF(.bss);
 
-   _ld_stack_address = _ld_text_start + 0x40000;
+   _ld_stack_address = _ld_text_start + 0x100000;
 }

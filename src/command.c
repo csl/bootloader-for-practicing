@@ -178,8 +178,8 @@ int GetArgs(char *s, char **argv)
 
 bool DoBootKernel(CMD_TBL *cptr, int argc, char **argv)
 {
-	long opt[2];
-	void (*theKernel)(int zero, int arch);
+	//long opt[2];
+	void (*theKernel)();
 
 	if (argc!=1 && argc!=3 && argc!=4)
 	{
@@ -191,9 +191,9 @@ bool DoBootKernel(CMD_TBL *cptr, int argc, char **argv)
 	{
 		// boot
 		case 1 :
-			opt[0] = 0;
-			opt[1] = 200;
-			theKernel = (void (*)(int, int))KERNEL_DRAM_BASE;
+			//opt[0] = 0;
+			//opt[1] = 0;
+			theKernel = (void (*)) KERNEL_DRAM_BASE;
 			break;
 		default :
 			printf(cptr->usage);
@@ -203,7 +203,8 @@ bool DoBootKernel(CMD_TBL *cptr, int argc, char **argv)
 	// we assume that the kernel is in place.
 	// See linux/include/asm-arm/system.h for architecture numbers.
 	printf("\nStarting kernel ...\n\n");
-	theKernel(opt[0], opt[1]);
+
+	theKernel();
 
 	printf("Hey, the kernel returned! This should not happen.\n");
 	return true;
