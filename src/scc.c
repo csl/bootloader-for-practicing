@@ -254,7 +254,7 @@ bool EthInit()
         MAC_ADDR5 = clientEther[5];
         ch = MAC_ADDR5;
 
-        printf("the mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
+        printf("\n\nthe mac address is %x,%x,%x,%x,%x,%x\n\n",MAC_ADDR0,MAC_ADDR1,MAC_ADDR2,MAC_ADDR3,MAC_ADDR4,MAC_ADDR5);
         
 	//Enable Autorelease,enbable transmit error interrupt bit into EPH interrupt status.
 	IO_CTR = 0x08E0;

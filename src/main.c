@@ -56,8 +56,8 @@ void c_main()
 
 	//// printf the required GPL string. //////////////////////////////////////
 	printf("\n\n");
-	printf(" "PACKAGE "-" VERSION "\n Copyright 2005 Embedded Group at 211.1010@UESTC\n");
-	printf(" Support:211.1010@UESTC\n");
+	//printf(" "PACKAGE "-" VERSION "\n Copyright 2005 Embedded Group at 211.1010@UESTC\n");
+	//printf(" Support:211.1010@UESTC\n");
 	printf("\n");
 
 	//MemCpy((char *)KERNEL_DRAM_BASE, (char *)KERNEL_SRAM_BASE, KERNEL_MAX_SIZE);	// kernel image reload
@@ -122,7 +122,8 @@ void c_main()
 } // CMain.
 
 
-bool DoPrintfHelp(int argc, char **argv){
+bool DoPrintfHelp(int argc, char **argv)
+{
 	CMD_TBL	*cptr;
 
 	if (argc==1){

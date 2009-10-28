@@ -6,6 +6,7 @@ rm -f $FLASH_IMAGE_NAME
 if [ -e x-boot255 ]; then
     dd of=$FLASH_IMAGE_NAME bs=1k count=16k if=/dev/zero
     dd of=$FLASH_IMAGE_NAME bs=1k conv=notrunc if=x-boot255
+    dd of=$FLASH_IMAGE_NAME bs=1k conv=notrunc seek=29 if=curt_image.bin
 else
     echo "Please invoke 'make' to get one."
     exit 1

@@ -47,7 +47,7 @@ reset:
 
 	// Copy Bootloader from Flash to SDRAM
 	bl	copy_to_ram
-/*	
+
 	// Loading kernel image
         ldr	r4, =KERNEL_SRAM_BASE
         ldr	r5, =KERNEL_DRAM_BASE
@@ -58,7 +58,7 @@ repeat:
         stmia   r5!, {r0-r3, r7-r10}
         cmp             r4, r6
         blt             repeat
-*/
+
         ldr	sp, =_ld_stack_address
 
         // Jump to c_main
