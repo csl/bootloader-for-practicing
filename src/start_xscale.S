@@ -28,8 +28,40 @@
 ///////////////////////////////////////////////////////////////////////////////
 .globl _start
 _start:
-        b       reset
+	b reset
+	b und_handler
+	b swi_handler
+	b abt_pref_handler
+	b abt_data_handler
+	b not_used
+	b irq_handler
+	b fiq_handler
 
+.align 4
+und_handler:
+	b loop
+
+swi_handler:
+	b loop
+
+abt_pref_handler:
+	b loop
+
+abt_data_handler:
+	b loop
+
+not_used:
+	b loop
+
+loop:
+	b loop
+
+irq_handler:
+	ldr r1, =0xa10009e8
+	mov pc, r1
+
+fiq_handler:
+	b loop
 
 reset:
         // Mask All interrupt 
