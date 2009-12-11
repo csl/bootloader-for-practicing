@@ -28,6 +28,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 .globl _start
 _start:
+	b _start
 	b reset
 	b und_handler
 	b swi_handler
@@ -57,7 +58,7 @@ loop:
 	b loop
 
 irq_handler:
-	ldr r1, =0xa10009e8
+	ldr r1, =0xa1000038
 	mov pc, r1
 
 fiq_handler:
